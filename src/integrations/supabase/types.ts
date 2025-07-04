@@ -9,7 +9,81 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          child_age: number | null
+          child_name: string | null
+          created_at: string
+          favorite_themes: string[] | null
+          id: string
+          parent_email: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          child_age?: number | null
+          child_name?: string | null
+          created_at?: string
+          favorite_themes?: string[] | null
+          id?: string
+          parent_email?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          child_age?: number | null
+          child_name?: string | null
+          created_at?: string
+          favorite_themes?: string[] | null
+          id?: string
+          parent_email?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stories: {
+        Row: {
+          audio_url: string | null
+          child_age: number
+          child_name: string
+          created_at: string
+          id: string
+          illustration_url: string | null
+          story_content: string
+          theme: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          audio_url?: string | null
+          child_age: number
+          child_name: string
+          created_at?: string
+          id?: string
+          illustration_url?: string | null
+          story_content: string
+          theme: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          audio_url?: string | null
+          child_age?: number
+          child_name?: string
+          created_at?: string
+          id?: string
+          illustration_url?: string | null
+          story_content?: string
+          theme?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
