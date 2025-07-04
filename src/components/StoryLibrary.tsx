@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { BookOpen, Download, Play, Pause, Trash2, Calendar, User } from "lucide-react";
+import { StoryReader } from "./StoryReader";
 
 interface Story {
   id: string;
@@ -85,6 +86,30 @@ export function StoryLibrary() {
     URL.revokeObjectURL(url);
   };
 
+  if (selectedStory) {
+    return (
+      <div>
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="outline"
+            onClick={() => setSelectedStory(null)}
+            className="flex items-center gap-2"
+          >
+            ← Retour à la bibliothèque
+          </Button>
+          <h2 className="text-2xl font-bold">{selectedStory.title}</h2>
+        </div>
+        <StoryReader story={{
+          id: selectedStory.id,
+          title: selectedStory.title,
+          content: selectedStory.story_content,
+          illustration_url: selectedStory.illustration_url,
+          audio_url: selectedStory.audio_url
+        }} />
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -113,12 +138,7 @@ export function StoryLibrary() {
         {stories.map((story) => (
           <Card
             key={story.id}
-            className={`cursor-pointer transition-all hover:shadow-lg ${
-              selectedStory?.id === story.id
-                ? "ring-2 ring-primary bg-primary/5"
-                : "hover:bg-muted/50"
-            }`}
-            onClick={() => setSelectedStory(story)}
+            className="transition-all hover:shadow-lg hover:bg-muted/50"
           >
             <CardHeader className="pb-3">
               <CardTitle className="text-lg line-clamp-2">{story.title}</CardTitle>
@@ -128,7 +148,7 @@ export function StoryLibrary() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                 <span className="capitalize bg-primary/10 px-2 py-1 rounded-full">
                   {story.theme}
                 </span>
@@ -137,66 +157,36 @@ export function StoryLibrary() {
                   {new Date(story.created_at).toLocaleDateString("fr-FR")}
                 </div>
               </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedStory(story);
+                  }}
+                  className="flex items-center gap-2 flex-1"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Lire
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    downloadStory(story);
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  PDF
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Selected Story Detail */}
-      {selectedStory && (
-        <Card className="mt-8">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-2xl">{selectedStory.title}</CardTitle>
-                <CardDescription className="text-lg mt-2">
-                  Histoire pour {selectedStory.child_name}, {selectedStory.child_age} ans
-                </CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => downloadStory(selectedStory)}
-                  className="flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Télécharger
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => deleteStory(selectedStory.id)}
-                  className="flex items-center gap-2 text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Supprimer
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="prose max-w-none">
-              <div className="bg-muted/30 p-6 rounded-lg">
-                <p className="whitespace-pre-wrap text-foreground leading-relaxed">
-                  {selectedStory.story_content}
-                </p>
-              </div>
-            </div>
-            
-            {selectedStory.illustration_url && (
-              <div className="mt-6">
-                <h4 className="font-semibold mb-3">Illustration</h4>
-                <img
-                  src={selectedStory.illustration_url}
-                  alt="Illustration de l'histoire"
-                  className="rounded-lg max-w-full h-auto"
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
