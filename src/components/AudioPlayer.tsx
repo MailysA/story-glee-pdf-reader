@@ -31,9 +31,11 @@ const AVAILABLE_VOICES: Voice[] = [
 ];
 
 const SOUND_EFFECTS = [
-  { id: "forest", name: "Forêt magique", url: "/sounds/forest.mp3" },
-  { id: "ocean", name: "Océan", url: "/sounds/ocean.mp3" },
-  { id: "castle", name: "Château", url: "/sounds/castle.mp3" },
+  { id: "birds", name: "Oiseaux de la forêt", url: "/sounds/birds.mp3" },
+  { id: "rain", name: "Pluie apaisante", url: "/sounds/rain.mp3" },
+  { id: "seagull", name: "Mouettes océaniques", url: "/sounds/seagull.mp3" },
+  { id: "page-flip", name: "Tournage de pages", url: "/sounds/page-flip.mp3" },
+  { id: "laugh", name: "Rires joyeux", url: "/sounds/laught.mp3" },
   { id: "none", name: "Aucun", url: "" },
 ];
 

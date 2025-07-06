@@ -10,14 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Wand2, Heart, Star } from "lucide-react";
 
 const themes = [
-  { value: "aventure", label: "🗺️ Aventure", description: "Exploration et découvertes", video: "" },
+  { value: "aventure", label: "🗺️ Aventure", description: "Exploration et découvertes", video: "/videos/book.mp4" },
   { value: "magie", label: "✨ Magie", description: "Monde fantastique et sortilèges", video: "/videos/magic-house.mp4" },
-  { value: "animaux", label: "🐾 Animaux", description: "Amis à quatre pattes", video: "" },
-  { value: "espace", label: "🚀 Espace", description: "Voyage intergalactique", video: "" },
+  { value: "animaux", label: "🐾 Animaux", description: "Amis à quatre pattes", video: "/videos/book.mp4" },
+  { value: "espace", label: "🚀 Espace", description: "Voyage intergalactique", video: "/videos/book.mp4" },
   { value: "ocean", label: "🌊 Océan", description: "Mystères sous-marins", video: "/videos/ocean.mp4" },
-  { value: "foret", label: "🌲 Forêt", description: "Créatures magiques des bois", video: "" },
+  { value: "foret", label: "🌲 Forêt", description: "Créatures magiques des bois", video: "/videos/book.mp4" },
   { value: "princesse", label: "👑 Princesse", description: "Château et royauté", video: "/videos/moyen-age.mp4" },
-  { value: "dinosaures", label: "🦕 Dinosaures", description: "Préhistoire et géants", video: "" },
+  { value: "dinosaures", label: "🦕 Dinosaures", description: "Préhistoire et géants", video: "/videos/book.mp4" },
 ];
 
 export function StoryCreationForm() {
