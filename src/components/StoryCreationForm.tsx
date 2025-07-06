@@ -10,14 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Wand2, Heart, Star } from "lucide-react";
 
 const themes = [
-  { value: "aventure", label: "🗺️ Aventure", description: "Exploration et découvertes" },
-  { value: "magie", label: "✨ Magie", description: "Monde fantastique et sortilèges" },
-  { value: "animaux", label: "🐾 Animaux", description: "Amis à quatre pattes" },
-  { value: "espace", label: "🚀 Espace", description: "Voyage intergalactique" },
-  { value: "ocean", label: "🌊 Océan", description: "Mystères sous-marins" },
-  { value: "foret", label: "🌲 Forêt", description: "Créatures magiques des bois" },
-  { value: "princesse", label: "👑 Princesse", description: "Château et royauté" },
-  { value: "dinosaures", label: "🦕 Dinosaures", description: "Préhistoire et géants" },
+  { value: "aventure", label: "🗺️ Aventure", description: "Exploration et découvertes", video: "" },
+  { value: "magie", label: "✨ Magie", description: "Monde fantastique et sortilèges", video: "/videos/magic-house.mp4" },
+  { value: "animaux", label: "🐾 Animaux", description: "Amis à quatre pattes", video: "" },
+  { value: "espace", label: "🚀 Espace", description: "Voyage intergalactique", video: "" },
+  { value: "ocean", label: "🌊 Océan", description: "Mystères sous-marins", video: "/videos/ocean.mp4" },
+  { value: "foret", label: "🌲 Forêt", description: "Créatures magiques des bois", video: "" },
+  { value: "princesse", label: "👑 Princesse", description: "Château et royauté", video: "/videos/moyen-age.mp4" },
+  { value: "dinosaures", label: "🦕 Dinosaures", description: "Préhistoire et géants", video: "" },
 ];
 
 export function StoryCreationForm() {
@@ -139,18 +139,44 @@ export function StoryCreationForm() {
           {themes.map((theme) => (
             <Card
               key={theme.value}
-              className={`cursor-pointer transition-all hover:shadow-lg ${
+              className={`cursor-pointer transition-all hover:shadow-lg overflow-hidden ${
                 selectedTheme === theme.value
                   ? "ring-2 ring-primary bg-primary/5"
                   : "hover:bg-muted/50"
               }`}
               onClick={() => setSelectedTheme(theme.value)}
             >
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl mb-2">{theme.label.split(" ")[0]}</div>
-                <div className="font-medium">{theme.label.split(" ").slice(1).join(" ")}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  {theme.description}
+              <CardContent className="p-0">
+                {theme.video ? (
+                  <div className="relative">
+                    <video 
+                      className="w-full h-32 object-cover"
+                      autoPlay 
+                      loop 
+                      muted
+                      playsInline
+                    >
+                      <source src={theme.video} type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <div className="text-white text-center">
+                        <div className="text-2xl mb-1">{theme.label.split(" ")[0]}</div>
+                        <div className="font-medium text-sm">{theme.label.split(" ").slice(1).join(" ")}</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-32 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-2xl mb-1">{theme.label.split(" ")[0]}</div>
+                      <div className="font-medium text-sm">{theme.label.split(" ").slice(1).join(" ")}</div>
+                    </div>
+                  </div>
+                )}
+                <div className="p-3 text-center">
+                  <div className="text-xs text-muted-foreground">
+                    {theme.description}
+                  </div>
                 </div>
               </CardContent>
             </Card>

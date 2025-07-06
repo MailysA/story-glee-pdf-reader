@@ -164,8 +164,17 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
       if (sound && backgroundAudioRef.current) {
         backgroundAudioRef.current.src = sound.url;
         backgroundAudioRef.current.loop = true;
+        backgroundAudioRef.current.onerror = () => {
+          toast({
+            title: "Fichier audio manquant",
+            description: `Le fichier ${sound.name} n'est pas disponible. Ajoutez un vrai fichier .mp3 dans public/sounds/`,
+            variant: "destructive",
+          });
+        };
         if (isPlaying) {
-          backgroundAudioRef.current.play();
+          backgroundAudioRef.current.play().catch(() => {
+            // Ignore si le fichier n'existe pas
+          });
         }
       }
     }
