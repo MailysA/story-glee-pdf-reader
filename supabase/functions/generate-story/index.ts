@@ -18,7 +18,7 @@ serve(async (req) => {
       throw new Error('Informations manquantes');
     }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const openAIApiKey = Deno.env.get('OPEN_AI_API_KEY');
     if (!openAIApiKey) {
       throw new Error('Clé API OpenAI non configurée');
     }
