@@ -117,12 +117,19 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
                     src={pages[currentPage].illustration} 
                     alt={`Illustration page ${currentPage + 1}`}
                     className="max-w-full h-auto rounded-lg shadow-lg"
+                    onError={(e) => {
+                      // En cas d'erreur de chargement, afficher l'image par défaut
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.nextElementSibling?.classList.remove('hidden');
+                    }}
                   />
-                ) : (
-                  <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
-                    <BookOpen className="w-16 h-16 text-muted-foreground" />
-                  </div>
-                )}
+                ) : null}
+                <div className={`w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center ${
+                  pages[currentPage]?.illustration ? 'hidden' : ''
+                }`}>
+                  <BookOpen className="w-16 h-16 text-muted-foreground" />
+                </div>
               </div>
             </div>
 
