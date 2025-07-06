@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Sparkles, Wand2, Heart, Star } from "lucide-react";
+import { Sparkles, Wand2, Heart, Star, Image } from "lucide-react";
 
 const themes = [
   { value: "aventure", label: "🗺️ Aventure", description: "Exploration et découvertes", video: "/videos/book.mp4" },
@@ -59,6 +59,29 @@ export function StoryCreationForm() {
       if (storyError) throw storyError;
       if (!storyData?.story) throw new Error("Erreur lors de la génération de l'histoire");
 
+      // Generate illustration
+      let illustrationUrl = null;
+      try {
+        console.log("Génération de l'illustration...");
+        const { data: illustrationData, error: illustrationError } = await supabase.functions.invoke('generate-illustration', {
+          body: {
+            theme: selectedTheme,
+            childName,
+            storyTitle: storyData.title || `L'aventure de ${childName}`
+          }
+        });
+
+        if (illustrationError) {
+          console.error("Erreur illustration:", illustrationError);
+        } else if (illustrationData?.imageUrl) {
+          illustrationUrl = illustrationData.imageUrl;
+          console.log("Illustration générée:", illustrationUrl);
+        }
+      } catch (illustrationError) {
+        console.error("Erreur lors de la génération de l'illustration:", illustrationError);
+        // Continue sans illustration, pas bloquant
+      }
+
       // Save story to database
       const { error } = await supabase
         .from("stories")
@@ -69,13 +92,22 @@ export function StoryCreationForm() {
           child_name: childName,
           child_age: parseInt(childAge),
           story_content: storyData.story,
+          illustration_url: illustrationUrl,
         });
 
       if (error) throw error;
 
       toast({
         title: "Histoire créée!",
-        description: "Votre histoire magique a été générée avec l'IA et sauvegardée.",
+        description: illustrationUrl 
+          ? "Votre histoire magique avec illustration a été générée et sauvegardée."
+          : "Votre histoire magique a été générée et sauvegardée.",
+        action: illustrationUrl ? (
+          <div className="flex items-center gap-1 text-xs">
+            <Image className="w-3 h-3" />
+            Avec illustration
+          </div>
+        ) : undefined,
       });
 
       // Reset form
@@ -85,6 +117,7 @@ export function StoryCreationForm() {
       setCustomDetails("");
 
     } catch (error: any) {
+      console.error("Erreur complète:", error);
       toast({
         title: "Erreur",
         description: error.message,

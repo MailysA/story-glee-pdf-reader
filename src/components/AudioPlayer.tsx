@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Play, Pause, Volume2, VolumeOff, SkipBack, SkipForward, Headphones } from "lucide-react";
+import { Play, Pause, Volume2, VolumeOff, SkipBack, SkipForward, Headphones, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -49,13 +49,18 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   const [backgroundSound, setBackgroundSound] = useState("none");
   const [isLoading, setIsLoading] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const backgroundAudioRef = useRef<HTMLAudioElement>(null);
 
   const generateAudio = async (text: string, voice: string) => {
     setIsLoading(true);
+    setAudioError(null);
+    
     try {
+      console.log("Génération audio avec voix:", voice);
+      
       const { data, error } = await supabase.functions.invoke('generate-audio', {
         body: { 
           text,
@@ -64,7 +69,10 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Erreur Supabase:", error);
+        throw new Error(`Erreur serveur: ${error.message}`);
+      }
 
       if (data?.audioContent) {
         const audioBlob = new Blob(
@@ -77,11 +85,32 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
           audioRef.current.src = audioUrl;
           audioRef.current.load();
         }
+        
+        console.log("Audio généré avec succès");
+      } else {
+        throw new Error("Aucun contenu audio reçu du serveur");
       }
     } catch (error: any) {
+      console.error("Erreur génération audio:", error);
+      
+      let errorMessage = "Impossible de générer l'audio.";
+      
+      if (error.message.includes("ELEVENLABS_API_KEY")) {
+        errorMessage = "Clé API ElevenLabs manquante. Veuillez la configurer dans les paramètres Supabase.";
+        setAudioError("API_KEY_MISSING");
+      } else if (error.message.includes("401") || error.message.includes("unauthorized")) {
+        errorMessage = "Clé API ElevenLabs invalide. Vérifiez votre configuration.";
+        setAudioError("API_KEY_INVALID");
+      } else if (error.message.includes("quota") || error.message.includes("limit")) {
+        errorMessage = "Quota ElevenLabs dépassé. Vérifiez votre abonnement.";
+        setAudioError("QUOTA_EXCEEDED");
+      } else {
+        setAudioError("GENERATION_ERROR");
+      }
+      
       toast({
         title: "Erreur audio",
-        description: "Impossible de générer l'audio. Vérifiez votre connexion.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -90,22 +119,37 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   };
 
   const togglePlay = async () => {
-    if (!audioRef.current?.src && !isLoading) {
+    console.log("Toggle play - État actuel:", { 
+      hasAudioSrc: !!audioRef.current?.src, 
+      isLoading, 
+      audioError 
+    });
+
+    if (!audioRef.current?.src && !isLoading && !audioError) {
       // Générer l'audio si pas encore fait
       await generateAudio(story.content, selectedVoice);
     }
 
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        backgroundAudioRef.current?.pause();
-      } else {
-        audioRef.current.play();
-        if (backgroundSound !== "none") {
-          backgroundAudioRef.current?.play();
+    if (audioRef.current && audioRef.current.src) {
+      try {
+        if (isPlaying) {
+          audioRef.current.pause();
+          backgroundAudioRef.current?.pause();
+        } else {
+          await audioRef.current.play();
+          if (backgroundSound !== "none") {
+            backgroundAudioRef.current?.play().catch(console.error);
+          }
         }
+        setIsPlaying(!isPlaying);
+      } catch (playError) {
+        console.error("Erreur lecture:", playError);
+        toast({
+          title: "Erreur de lecture",
+          description: "Impossible de lire l'audio. Essayez de régénérer.",
+          variant: "destructive",
+        });
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -134,7 +178,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
       audioRef.current.volume = value[0] / 100;
     }
     if (backgroundAudioRef.current) {
-      backgroundAudioRef.current.volume = (value[0] / 100) * 0.3; // Background plus faible
+      backgroundAudioRef.current.volume = (value[0] / 100) * 0.3;
     }
   };
 
@@ -150,6 +194,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
 
   const changeVoice = async (voiceId: string) => {
     setSelectedVoice(voiceId);
+    setAudioError(null);
     if (audioRef.current?.src) {
       await generateAudio(story.content, voiceId);
     }
@@ -167,15 +212,11 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
         backgroundAudioRef.current.src = sound.url;
         backgroundAudioRef.current.loop = true;
         backgroundAudioRef.current.onerror = () => {
-          toast({
-            title: "Fichier audio manquant",
-            description: `Le fichier ${sound.name} n'est pas disponible. Ajoutez un vrai fichier .mp3 dans public/sounds/`,
-            variant: "destructive",
-          });
+          console.log(`Fichier audio ${sound.name} non trouvé`);
         };
         if (isPlaying) {
           backgroundAudioRef.current.play().catch(() => {
-            // Ignore si le fichier n'existe pas
+            console.log("Impossible de lire l'ambiance sonore");
           });
         }
       }
@@ -214,11 +255,35 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
         <div className="flex items-center gap-2 mb-4">
           <Headphones className="w-5 h-5 text-primary" />
           <h3 className="font-semibold text-lg">Lecteur Audio Magique</h3>
+          {audioError && (
+            <div className="ml-auto flex items-center gap-1 text-orange-600">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-xs">Configuration requise</span>
+            </div>
+          )}
         </div>
 
         {/* Audio Elements */}
         <audio ref={audioRef} preload="metadata" />
         <audio ref={backgroundAudioRef} preload="metadata" />
+
+        {/* Error Message */}
+        {audioError && (
+          <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-md">
+            <div className="flex items-center gap-2 text-orange-800">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {audioError === "API_KEY_MISSING" && "Clé API ElevenLabs manquante"}
+                {audioError === "API_KEY_INVALID" && "Clé API ElevenLabs invalide"}
+                {audioError === "QUOTA_EXCEEDED" && "Quota ElevenLabs dépassé"}
+                {audioError === "GENERATION_ERROR" && "Erreur de génération audio"}
+              </span>
+            </div>
+            <p className="text-xs text-orange-600 mt-1">
+              Configurez votre clé API ElevenLabs dans les paramètres Supabase pour activer la narration audio.
+            </p>
+          </div>
+        )}
 
         {/* Main Controls */}
         <div className="flex items-center gap-4 mb-4">
