@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Volume2, VolumeOff, Play, Pause, SkipBack, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StoryPage {
   id: number;
@@ -27,23 +28,56 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [isFlipping, setIsFlipping] = useState(false);
   const [pages, setPages] = useState<StoryPage[]>([]);
+  const [loadingIllustrations, setLoadingIllustrations] = useState<{[key: number]: boolean}>({});
+
+  const generateIllustrationForPage = async (pageText: string, pageId: number) => {
+    try {
+      setLoadingIllustrations(prev => ({ ...prev, [pageId]: true }));
+      
+      const { data, error } = await supabase.functions.invoke('generate-illustration', {
+        body: {
+          theme: story.title,
+          childName: "l'enfant",
+          storyTitle: story.title,
+          pageContent: pageText
+        }
+      });
+
+      if (error) throw error;
+
+      setPages(prevPages => prevPages.map(page => 
+        page.id === pageId 
+          ? { ...page, illustration: data.imageUrl }
+          : page
+      ));
+    } catch (error) {
+      console.error('Erreur génération illustration:', error);
+    } finally {
+      setLoadingIllustrations(prev => ({ ...prev, [pageId]: false }));
+    }
+  };
 
   useEffect(() => {
     // Diviser l'histoire en pages (environ 100-150 mots par page)
     const sentences = story.content.split(/[.!?]+/).filter(s => s.trim());
-    const wordsPerPage = 25; // Pour les enfants, moins de mots par page
     const storyPages: StoryPage[] = [];
     
     for (let i = 0; i < sentences.length; i += 2) {
       const pageText = sentences.slice(i, i + 2).join('. ') + '.';
+      const pageId = i / 2;
       storyPages.push({
-        id: i / 2,
+        id: pageId,
         text: pageText.trim(),
-        illustration: story.illustration_url,
+        illustration: undefined,
       });
     }
 
     setPages(storyPages);
+
+    // Générer les illustrations pour chaque page
+    storyPages.forEach((page) => {
+      generateIllustrationForPage(page.text, page.id);
+    });
   }, [story]);
 
   const handlePageChange = (direction: 'next' | 'prev') => {
@@ -112,11 +146,20 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
 
               {/* Illustration Side */}
               <div className="flex items-center justify-center">
-                {pages[currentPage]?.illustration ? (
+                {loadingIllustrations[currentPage] ? (
+                  <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="animate-spin mb-2">
+                        <BookOpen className="w-8 h-8 text-primary mx-auto" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">Génération de l'illustration...</p>
+                    </div>
+                  </div>
+                ) : pages[currentPage]?.illustration ? (
                   <img 
                     src={pages[currentPage].illustration} 
                     alt={`Illustration page ${currentPage + 1}`}
-                    className="max-w-full h-auto rounded-lg shadow-lg"
+                    className="max-w-full h-auto rounded-lg shadow-lg max-h-64"
                     onError={(e) => {
                       // En cas d'erreur de chargement, afficher l'image par défaut
                       const target = e.target as HTMLImageElement;
@@ -124,12 +167,11 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
                       target.nextElementSibling?.classList.remove('hidden');
                     }}
                   />
-                ) : null}
-                <div className={`w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center ${
-                  pages[currentPage]?.illustration ? 'hidden' : ''
-                }`}>
-                  <BookOpen className="w-16 h-16 text-muted-foreground" />
-                </div>
+                ) : (
+                  <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-16 h-16 text-muted-foreground" />
+                  </div>
+                )}
               </div>
             </div>
 
