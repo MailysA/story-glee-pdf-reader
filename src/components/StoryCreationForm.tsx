@@ -46,26 +46,36 @@ export function StoryCreationForm() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Utilisateur non connecté");
 
-      // For now, we'll create a placeholder story
-      // Later we'll implement AI generation
-      const storyContent = `Il était une fois ${childName}, un${parseInt(childAge) < 8 ? " petit" : ""} enfant de ${childAge} ans qui vivait une aventure extraordinaire dans le monde de ${selectedTheme}...`;
+      // Generate AI story
+      const { data: storyData, error: storyError } = await supabase.functions.invoke('generate-story', {
+        body: {
+          childName,
+          childAge: parseInt(childAge),
+          theme: selectedTheme,
+          customDetails
+        }
+      });
 
+      if (storyError) throw storyError;
+      if (!storyData?.story) throw new Error("Erreur lors de la génération de l'histoire");
+
+      // Save story to database
       const { error } = await supabase
         .from("stories")
         .insert({
           user_id: user.id,
-          title: `L'aventure de ${childName}`,
+          title: storyData.title || `L'aventure de ${childName}`,
           theme: selectedTheme,
           child_name: childName,
           child_age: parseInt(childAge),
-          story_content: storyContent,
+          story_content: storyData.story,
         });
 
       if (error) throw error;
 
       toast({
         title: "Histoire créée!",
-        description: "Votre histoire personnalisée a été créée avec succès.",
+        description: "Votre histoire magique a été générée avec l'IA et sauvegardée.",
       });
 
       // Reset form
