@@ -268,23 +268,18 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
               </Button>
 
               <div className="flex items-center gap-2">
-                {Array.from({ length: Math.min(pages.length, 5) }, (_, i) => {
-                  const pageIndex = Math.max(0, currentPage - 2 + i);
-                  if (pageIndex >= pages.length) return null;
-                  
-                  return (
-                    <button
-                      key={pageIndex}
-                      onClick={() => setCurrentPage(pageIndex)}
-                      className={cn(
-                        "w-3 h-3 rounded-full transition-all",
-                        pageIndex === currentPage 
-                          ? "bg-primary scale-125" 
-                          : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                      )}
-                    />
-                  );
-                })}
+                {pages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentPage(index)}
+                    className={cn(
+                      "w-3 h-3 rounded-full transition-all",
+                      index === currentPage 
+                        ? "bg-primary scale-125" 
+                        : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                    )}
+                  />
+                ))}
               </div>
 
               <Button
