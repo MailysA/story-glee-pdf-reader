@@ -10,15 +10,85 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { Sparkles, Wand2, Heart, Star, Image } from "lucide-react";
 
-const themes = [
-  { value: "aventure", label: "🗺️ Aventure", description: "Exploration et découvertes", video: "/videos/book.mp4" },
-  { value: "magie", label: "✨ Magie", description: "Monde fantastique et sortilèges", video: "/videos/magic-house.mp4" },
-  { value: "animaux", label: "🐾 Animaux", description: "Amis à quatre pattes", video: "/videos/book.mp4" },
-  { value: "espace", label: "🚀 Espace", description: "Voyage intergalactique", video: "/videos/book.mp4" },
-  { value: "ocean", label: "🌊 Océan", description: "Mystères sous-marins", video: "/videos/ocean.mp4" },
-  { value: "foret", label: "🌲 Forêt", description: "Créatures magiques des bois", video: "/videos/book.mp4" },
-  { value: "princesse", label: "👑 Princesse", description: "Château et royauté", video: "/videos/moyen-age.mp4" },
-  { value: "dinosaures", label: "🦕 Dinosaures", description: "Préhistoire et géants", video: "/videos/book.mp4" },
+const themeCategories = [
+  {
+    name: "Contes & Légendes",
+    icon: "👑",
+    themes: [
+      { value: "conte-de-fees", label: "✨ Conte de Fées", description: "Magie et merveilles", video: "/videos/farytail.mp4" },
+      { value: "princesse", label: "👑 Princesse", description: "Château et royauté", video: "/videos/princess.mp4" },
+      { value: "sorciere", label: "🧙‍♀️ Sorcière", description: "Potions et sortilèges", video: "/videos/witch.mp4" },
+      { value: "fantome", label: "👻 Fantôme", description: "Mystères et frissons", video: "/videos/ghost.mp4" },
+    ]
+  },
+  {
+    name: "Aventures & Exploration",
+    icon: "🗺️",
+    themes: [
+      { value: "aventure", label: "🗺️ Grande Aventure", description: "Exploration et découvertes", video: "/videos/adventure1.mp4" },
+      { value: "aventure-jungle", label: "🌿 Aventure Jungle", description: "Expédition tropicale", video: "/videos/adventure2.mp4" },
+      { value: "pirate", label: "🏴‍☠️ Pirates", description: "Trésors et océans", video: "/videos/pirate.mp4" },
+      { value: "alien", label: "👽 Extraterrestres", description: "Rencontres cosmiques", video: "/videos/alien.mp4" },
+    ]
+  },
+  {
+    name: "Nature & Environnement",
+    icon: "🌱",
+    themes: [
+      { value: "foret", label: "🌲 Forêt", description: "Créatures des bois", video: "/videos/forest1.mp4" },
+      { value: "foret-enchantee", label: "🧚‍♀️ Forêt Enchantée", description: "Magie forestière", video: "/videos/magic-forest.mp4" },
+      { value: "ocean", label: "🌊 Océan", description: "Mystères sous-marins", video: "/videos/ocean.mp4" },
+      { value: "banquise", label: "🐧 Banquise", description: "Aventures polaires", video: "/videos/banquise.mp4" },
+      { value: "environnement", label: "🌍 Environnement", description: "Protection de la nature", video: "/videos/environment.mp4" },
+    ]
+  },
+  {
+    name: "Histoire & Époques",
+    icon: "🏛️",
+    themes: [
+      { value: "egypte", label: "🏺 Égypte Antique", description: "Pharaons et pyramides", video: "/videos/egypte.mp4" },
+      { value: "moyen-age", label: "🏰 Moyen Âge", description: "Chevaliers et châteaux", video: "/videos/moyen-age.mp4" },
+      { value: "renaissance", label: "🎨 Renaissance", description: "Art et inventions", video: "/videos/renaissance.mp4" },
+      { value: "revolution", label: "⚔️ Révolution", description: "Grands changements", video: "/videos/revolution.mp4" },
+    ]
+  },
+  {
+    name: "Sciences & Découvertes",
+    icon: "🔬",
+    themes: [
+      { value: "dinosaures", label: "🦕 Dinosaures", description: "Préhistoire et géants", video: "/videos/dinosaures.mp4" },
+      { value: "robots", label: "🤖 Robots", description: "Technologie du futur", video: "/videos/robots.mp4" },
+      { value: "industriel", label: "🏭 Industrie", description: "Machines et innovations", video: "/videos/industriel.mp4" },
+    ]
+  },
+  {
+    name: "Apprentissage",
+    icon: "📚",
+    themes: [
+      { value: "alphabet", label: "🔤 Alphabet", description: "Lettres et mots", video: "/videos/alphabet.mp4" },
+      { value: "nombres", label: "🔢 Nombres", description: "Mathématiques amusantes", video: "/videos/numbers.mp4" },
+      { value: "logique", label: "🧩 Logique", description: "Énigmes et réflexion", video: "/videos/logic.mp4" },
+      { value: "emotions", label: "❤️ Émotions", description: "Sentiments et empathie", video: "/videos/emotions.mp4" },
+    ]
+  },
+  {
+    name: "Valeurs & Société",
+    icon: "🤝",
+    themes: [
+      { value: "respect", label: "🤝 Respect", description: "Vivre ensemble", video: "/videos/respect.mp4" },
+      { value: "bonnes-manieres", label: "🎩 Bonnes Manières", description: "Politesse et savoir-vivre", video: "/videos/goodmaners.mp4" },
+      { value: "recyclage", label: "♻️ Recyclage", description: "Prendre soin de la planète", video: "/videos/recycling.mp4" },
+    ]
+  },
+  {
+    name: "Divertissement",
+    icon: "🎪",
+    themes: [
+      { value: "cirque", label: "🎪 Cirque", description: "Spectacle et acrobaties", video: "/videos/circus.mp4" },
+      { value: "bonbons", label: "🍭 Bonbons", description: "Sucreries magiques", video: "/videos/candys.mp4" },
+      { value: "maison-magique", label: "🏠 Maison Magique", description: "Mystères domestiques", video: "/videos/magic-house.mp4" },
+    ]
+  }
 ];
 
 export function StoryCreationForm() {
@@ -176,55 +246,65 @@ export function StoryCreationForm() {
       </div>
 
       {/* Theme Selection */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Label className="text-base font-medium">Thème de l'histoire *</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {themes.map((theme) => (
-            <Card
-              key={theme.value}
-              className={`cursor-pointer transition-all hover:shadow-lg overflow-hidden ${
-                selectedTheme === theme.value
-                  ? "ring-2 ring-primary bg-primary/5"
-                  : "hover:bg-muted/50"
-              }`}
-              onClick={() => setSelectedTheme(theme.value)}
-            >
-              <CardContent className="p-0">
-                {theme.video ? (
-                  <div className="relative">
-                    <video 
-                      className="w-full h-32 object-cover"
-                      autoPlay 
-                      loop 
-                      muted
-                      playsInline
-                    >
-                      <source src={theme.video} type="video/mp4" />
-                    </video>
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <div className="text-white text-center">
-                        <div className="text-2xl mb-1">{theme.label.split(" ")[0]}</div>
-                        <div className="font-medium text-sm">{theme.label.split(" ").slice(1).join(" ")}</div>
+        
+        {themeCategories.map((category) => (
+          <div key={category.name} className="space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <span className="text-lg">{category.icon}</span>
+              {category.name}
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {category.themes.map((theme) => (
+                <Card
+                  key={theme.value}
+                  className={`cursor-pointer transition-all hover:shadow-lg overflow-hidden ${
+                    selectedTheme === theme.value
+                      ? "ring-2 ring-primary bg-primary/5"
+                      : "hover:bg-muted/50"
+                  }`}
+                  onClick={() => setSelectedTheme(theme.value)}
+                >
+                  <CardContent className="p-0">
+                    {theme.video ? (
+                      <div className="relative">
+                        <video 
+                          className="w-full h-32 object-cover"
+                          autoPlay 
+                          loop 
+                          muted
+                          playsInline
+                        >
+                          <source src={theme.video} type="video/mp4" />
+                        </video>
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <div className="text-white text-center">
+                            <div className="text-2xl mb-1">{theme.label.split(" ")[0]}</div>
+                            <div className="font-medium text-sm">{theme.label.split(" ").slice(1).join(" ")}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-32 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-2xl mb-1">{theme.label.split(" ")[0]}</div>
+                          <div className="font-medium text-sm">{theme.label.split(" ").slice(1).join(" ")}</div>
+                        </div>
+                      </div>
+                    )}
+                    <div className="p-3 text-center">
+                      <div className="text-xs text-muted-foreground">
+                        {theme.description}
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="h-32 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-2xl mb-1">{theme.label.split(" ")[0]}</div>
-                      <div className="font-medium text-sm">{theme.label.split(" ").slice(1).join(" ")}</div>
-                    </div>
-                  </div>
-                )}
-                <div className="p-3 text-center">
-                  <div className="text-xs text-muted-foreground">
-                    {theme.description}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Custom Details */}
