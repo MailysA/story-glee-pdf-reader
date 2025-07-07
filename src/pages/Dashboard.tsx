@@ -205,9 +205,11 @@ export default function Dashboard() {
                     <div className="text-sm font-medium">Votre consommation</div>
                     <UsageLimitCard
                       storiesUsed={storiesCount}
-                      storiesLimit={10}
+                      storiesLimit={isPremium ? 30 : 10}
                       downloadsUsed={downloadsCount}
                       downloadsLimit={3}
+                      audioGenerationsUsed={0}
+                      audioGenerationsLimit={isPremium ? 30 : 5}
                       onUpgrade={() => setShowPaywall(true)}
                     />
                     
