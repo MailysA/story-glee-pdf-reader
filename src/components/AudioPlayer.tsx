@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Play, Pause, Volume2, VolumeOff, SkipBack, SkipForward, Headphones, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -421,7 +422,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           
           {/* Voice Selection */}
-          <div>
+          <div className={cn(!isPremium && "opacity-50 pointer-events-none")}>
             <label className="block text-sm font-medium mb-2 flex items-center gap-2">
               Voix du narrateur
               {!isPremium && (
@@ -438,7 +439,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
             <Select 
               value={selectedVoice} 
               onValueChange={changeVoice} 
-              disabled={isLoading || subscriptionLoading}
+              disabled={isLoading || subscriptionLoading || !isPremium}
             >
               <SelectTrigger className={cn(
                 isLoading ? "opacity-50" : "",
@@ -460,7 +461,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
           </div>
 
           {/* Background Sound Selection */}
-          <div>
+          <div className={cn(!isPremium && "opacity-50 pointer-events-none")}>
             <label className="block text-sm font-medium mb-2 flex items-center gap-2">
               Ambiance sonore
               {!isPremium && (
@@ -472,7 +473,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
             <Select 
               value={backgroundSound} 
               onValueChange={handleBackgroundSoundChange}
-              disabled={subscriptionLoading}
+              disabled={subscriptionLoading || !isPremium}
             >
               <SelectTrigger className={!isPremium ? "opacity-70 cursor-not-allowed" : ""}>
                 <SelectValue />
@@ -488,7 +489,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
           </div>
 
           {/* Playback Speed */}
-          <div>
+          <div className={cn(!isPremium && "opacity-50 pointer-events-none")}>
             <label className="block text-sm font-medium mb-2 flex items-center gap-2">
               Vitesse de lecture
               {!isPremium && (
@@ -514,6 +515,21 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
             </Select>
           </div>
         </div>
+
+        {/* Audio Reading Progress Bar */}
+        {duration > 0 && (
+          <div className="mt-4 p-3 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg border border-primary/20">
+            <div className="flex items-center gap-2 mb-2">
+              <Headphones className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">Progression de la lecture</span>
+            </div>
+            <Progress value={(currentTime / duration) * 100} className="h-2" />
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>Écouté: {formatTime(currentTime)}</span>
+              <span>Restant: {formatTime(duration - currentTime)}</span>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

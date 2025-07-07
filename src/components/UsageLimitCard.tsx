@@ -21,7 +21,31 @@ export const UsageLimitCard = ({
 }: UsageLimitCardProps) => {
   const storiesPercentage = (storiesUsed / storiesLimit) * 100;
   const downloadsPercentage = (downloadsUsed / downloadsLimit) * 100;
-  const { isPremium } = useSubscription();
+  const { isPremium, subscriptionTier } = useSubscription();
+
+  // Définir les limites selon l'abonnement
+  const getSubscriptionLimits = () => {
+    if (!isPremium) {
+      return { stories: 10, downloads: 3 };
+    }
+    
+    switch (subscriptionTier) {
+      case 'Premium':
+        return { stories: 100, downloads: 50 };
+      case 'Premium+':
+        return { stories: 500, downloads: 200 };
+      case 'Enterprise':
+        return { stories: -1, downloads: -1 }; // Illimité
+      default:
+        return { stories: 10, downloads: 3 };
+    }
+  };
+
+  const limits = getSubscriptionLimits();
+  const actualStoriesLimit = limits.stories === -1 ? storiesLimit : Math.min(storiesLimit, limits.stories);
+  const actualDownloadsLimit = limits.downloads === -1 ? downloadsLimit : Math.min(downloadsLimit, limits.downloads);
+  const actualStoriesPercentage = limits.stories === -1 ? 0 : (storiesUsed / actualStoriesLimit) * 100;
+  const actualDownloadsPercentage = limits.downloads === -1 ? 0 : (downloadsUsed / actualDownloadsLimit) * 100;
 
   return (
     <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
@@ -40,15 +64,19 @@ export const UsageLimitCard = ({
               <span>Histoires magiques</span>
             </div>
             <span className="font-medium">
-              {storiesUsed}/{storiesLimit}
+              {limits.stories === -1 ? 'Illimité' : `${storiesUsed}/${actualStoriesLimit}`}
             </span>
           </div>
-          <Progress value={storiesPercentage} className="h-2" />
-          {storiesUsed >= storiesLimit ? (
+          <Progress value={actualStoriesPercentage} className="h-2" />
+          {limits.stories === -1 ? (
+            <p className="text-xs text-muted-foreground">
+              Histoires illimitées ✨
+            </p>
+          ) : storiesUsed >= actualStoriesLimit ? (
             <p className="text-xs text-destructive">Limite atteinte !</p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              {storiesLimit - storiesUsed} histoires restantes
+              {actualStoriesLimit - storiesUsed} histoires restantes
             </p>
           )}
         </div>
@@ -61,21 +89,25 @@ export const UsageLimitCard = ({
               <span>Téléchargements</span>
             </div>
             <span className="font-medium">
-              {downloadsUsed}/{downloadsLimit}
+              {limits.downloads === -1 ? 'Illimité' : `${downloadsUsed}/${actualDownloadsLimit}`}
             </span>
           </div>
-          <Progress value={downloadsPercentage} className="h-2" />
-          {downloadsUsed >= downloadsLimit ? (
+          <Progress value={actualDownloadsPercentage} className="h-2" />
+          {limits.downloads === -1 ? (
+            <p className="text-xs text-muted-foreground">
+              Téléchargements illimités ✨
+            </p>
+          ) : downloadsUsed >= actualDownloadsLimit ? (
             <p className="text-xs text-destructive">Limite atteinte !</p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              {downloadsLimit - downloadsUsed} téléchargements restants
+              {actualDownloadsLimit - downloadsUsed} téléchargements restants
             </p>
           )}
         </div>
 
         {/* Bouton Premium */}
-        {!isPremium && (storiesUsed >= storiesLimit || downloadsUsed >= downloadsLimit) && (
+        {!isPremium && (storiesUsed >= actualStoriesLimit || downloadsUsed >= actualDownloadsLimit) && (
           <div className="pt-2 border-t">
             <Button
               onClick={onUpgrade}
