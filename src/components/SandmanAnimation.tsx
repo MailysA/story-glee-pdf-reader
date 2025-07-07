@@ -255,7 +255,10 @@ export const SandmanAnimation = ({ isActive = false, direction = 'none', classNa
       {/* Canvas for sand animation */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-auto cursor-pointer z-20"
+        className={cn(
+          "absolute inset-0 w-full h-full z-20",
+          isActive ? "pointer-events-auto cursor-pointer" : "pointer-events-none"
+        )}
         style={{ 
           mixBlendMode: 'multiply',
           background: 'transparent'
