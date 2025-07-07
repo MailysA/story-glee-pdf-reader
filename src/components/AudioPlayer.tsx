@@ -489,9 +489,20 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
 
           {/* Playback Speed */}
           <div>
-            <label className="block text-sm font-medium mb-2">Vitesse de lecture</label>
-            <Select value={playbackRate.toString()} onValueChange={(value) => setPlaybackRate(parseFloat(value))}>
-              <SelectTrigger>
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+              Vitesse de lecture
+              {!isPremium && (
+                <span className="text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-1 rounded-full font-bold">
+                  PREMIUM
+                </span>
+              )}
+            </label>
+            <Select 
+              value={playbackRate.toString()} 
+              onValueChange={isPremium ? (value) => setPlaybackRate(parseFloat(value)) : undefined}
+              disabled={!isPremium || subscriptionLoading}
+            >
+              <SelectTrigger className={!isPremium ? "opacity-70 cursor-not-allowed" : ""}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
