@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Play, Pause, Volume2, VolumeOff, SkipBack, SkipForward, Headphones, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useSubscription } from "@/hooks/useSubscription";
+import { cn } from "@/lib/utils";
 
 interface AudioPlayerProps {
   story: {
@@ -50,6 +52,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const { isPremium, subscriptionTier, loading: subscriptionLoading } = useSubscription();
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const backgroundAudioRef = useRef<HTMLAudioElement>(null);
@@ -193,6 +196,16 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   };
 
   const changeVoice = async (voiceId: string) => {
+    // Vérifier si l'utilisateur a un abonnement premium
+    if (!isPremium) {
+      toast({
+        title: "Fonctionnalité Premium",
+        description: "Le changement de voix nécessite un abonnement Premium.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const wasPlaying = isPlaying;
     const savedTime = currentTime;
     
@@ -259,7 +272,17 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
     }
   };
 
-  const changeBackgroundSound = (soundId: string) => {
+  const handleBackgroundSoundChange = (soundId: string) => {
+    // Vérifier si l'utilisateur a un abonnement premium
+    if (!isPremium && soundId !== "none") {
+      toast({
+        title: "Fonctionnalité Premium",
+        description: "Les effets sonores nécessitent un abonnement Premium.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setBackgroundSound(soundId);
     if (backgroundAudioRef.current) {
       backgroundAudioRef.current.pause();
@@ -399,16 +422,28 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
           
           {/* Voice Selection */}
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
               Voix du narrateur
+              {!isPremium && (
+                <span className="text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-1 rounded-full font-bold">
+                  PREMIUM
+                </span>
+              )}
               {isLoading && (
                 <span className="ml-2 text-xs text-primary animate-pulse">
                   (changement en cours...)
                 </span>
               )}
             </label>
-            <Select value={selectedVoice} onValueChange={changeVoice} disabled={isLoading}>
-              <SelectTrigger className={isLoading ? "opacity-50" : ""}>
+            <Select 
+              value={selectedVoice} 
+              onValueChange={changeVoice} 
+              disabled={isLoading || subscriptionLoading}
+            >
+              <SelectTrigger className={cn(
+                isLoading ? "opacity-50" : "",
+                !isPremium ? "opacity-70 cursor-not-allowed" : ""
+              )}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -424,11 +459,22 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
             </Select>
           </div>
 
-          {/* Background Sound */}
+          {/* Background Sound Selection */}
           <div>
-            <label className="block text-sm font-medium mb-2">Ambiance sonore</label>
-            <Select value={backgroundSound} onValueChange={changeBackgroundSound}>
-              <SelectTrigger>
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+              Ambiance sonore
+              {!isPremium && (
+                <span className="text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-1 rounded-full font-bold">
+                  PREMIUM
+                </span>
+              )}
+            </label>
+            <Select 
+              value={backgroundSound} 
+              onValueChange={handleBackgroundSoundChange}
+              disabled={subscriptionLoading}
+            >
+              <SelectTrigger className={!isPremium ? "opacity-70 cursor-not-allowed" : ""}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

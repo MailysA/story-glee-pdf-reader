@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Volume2, VolumeOff, Play, Pause, SkipBack, SkipForward, ChevronLeft, ChevronRight } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
+import { SandmanAnimation } from "./SandmanAnimation";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -40,6 +41,7 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
   const [isFlipping, setIsFlipping] = useState(false);
   const [pages, setPages] = useState<StoryPage[]>([]);
   const [loadingIllustrations, setLoadingIllustrations] = useState<{[key: number]: boolean}>({});
+  const [showSandAnimation, setShowSandAnimation] = useState(false);
 
   const loadCoverIllustration = async (storyPages: StoryPage[]) => {
     try {
@@ -185,6 +187,7 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
 
   const handlePageChange = (direction: 'next' | 'prev') => {
     setIsFlipping(true);
+    setShowSandAnimation(true);
     
     setTimeout(() => {
       if (direction === 'next' && currentPage < pages.length - 1) {
@@ -194,6 +197,11 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
       }
       setIsFlipping(false);
     }, 300);
+
+    // Arrêter l'animation de sable après un délai
+    setTimeout(() => {
+      setShowSandAnimation(false);
+    }, 2000);
   };
 
   if (pages.length === 0) {
@@ -218,12 +226,18 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
                minHeight: "600px"
              }}>
           
+          {/* Sandman Animation Overlay */}
+          <SandmanAnimation 
+            isActive={showSandAnimation || isFlipping}
+            className="absolute inset-0 z-10 pointer-events-none"
+          />
+          
           {/* Book Spine Effect */}
           <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent"></div>
           
           {/* Current Page */}
           <div className={cn(
-            "p-8 h-full min-h-[600px] flex flex-col transition-all duration-500",
+            "relative z-20 p-8 h-full min-h-[600px] flex flex-col transition-all duration-500",
             isFlipping && "scale-95 opacity-50"
           )}>
             
