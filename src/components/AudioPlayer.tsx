@@ -193,10 +193,69 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   };
 
   const changeVoice = async (voiceId: string) => {
+    const wasPlaying = isPlaying;
+    const savedTime = currentTime;
+    
+    // Mettre en pause et sauvegarder la position
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      backgroundAudioRef.current?.pause();
+      setIsPlaying(false);
+    }
+    
     setSelectedVoice(voiceId);
     setAudioError(null);
-    if (audioRef.current?.src) {
+    
+    try {
+      // Générer le nouvel audio avec la nouvelle voix
       await generateAudio(story.content, voiceId);
+      
+      // Attendre que l'audio soit prêt et restaurer la position
+      if (audioRef.current) {
+        // Attendre que les métadonnées soient chargées
+        if (audioRef.current.readyState >= 1) {
+          // Les métadonnées sont déjà chargées
+          audioRef.current.currentTime = savedTime;
+          setCurrentTime(savedTime);
+        } else {
+          // Attendre le chargement des métadonnées
+          await new Promise((resolve) => {
+            const onLoadedMetadata = () => {
+              if (audioRef.current) {
+                audioRef.current.currentTime = savedTime;
+                setCurrentTime(savedTime);
+              }
+              audioRef.current?.removeEventListener('loadedmetadata', onLoadedMetadata);
+              resolve(null);
+            };
+            audioRef.current?.addEventListener('loadedmetadata', onLoadedMetadata);
+          });
+        }
+        
+        // Reprendre la lecture si elle était en cours
+        if (wasPlaying) {
+          await audioRef.current.play();
+          setIsPlaying(true);
+          
+          // Reprendre l'ambiance sonore si nécessaire
+          if (backgroundSound !== "none" && backgroundAudioRef.current) {
+            backgroundAudioRef.current.play().catch(console.error);
+          }
+        }
+      }
+      
+      toast({
+        title: "Voix changée",
+        description: `Narration avec ${AVAILABLE_VOICES.find(v => v.id === voiceId)?.name} activée`,
+      });
+      
+    } catch (error) {
+      console.error("Erreur changement de voix:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de changer la voix. Réessayez.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -340,9 +399,16 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
           
           {/* Voice Selection */}
           <div>
-            <label className="block text-sm font-medium mb-2">Voix du narrateur</label>
-            <Select value={selectedVoice} onValueChange={changeVoice}>
-              <SelectTrigger>
+            <label className="block text-sm font-medium mb-2">
+              Voix du narrateur
+              {isLoading && (
+                <span className="ml-2 text-xs text-primary animate-pulse">
+                  (changement en cours...)
+                </span>
+              )}
+            </label>
+            <Select value={selectedVoice} onValueChange={changeVoice} disabled={isLoading}>
+              <SelectTrigger className={isLoading ? "opacity-50" : ""}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
