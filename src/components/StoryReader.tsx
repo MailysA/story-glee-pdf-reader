@@ -41,57 +41,81 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
   const [pages, setPages] = useState<StoryPage[]>([]);
   const [loadingIllustrations, setLoadingIllustrations] = useState<{[key: number]: boolean}>({});
 
-  const loadExistingIllustrations = async (storyPages: StoryPage[]) => {
+  const loadCoverIllustration = async (storyPages: StoryPage[]) => {
     try {
-      const { data: existingIllustrations, error } = await supabase
+      // Vérifier s'il existe déjà une illustration de couverture (page 0)
+      const { data: existingCover, error } = await supabase
         .from('story_page_illustrations')
-        .select('page_number, illustration_url, page_content_hash')
-        .eq('story_id', story.id);
+        .select('illustration_url, page_content_hash')
+        .eq('story_id', story.id)
+        .eq('page_number', 0)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+
+      const titleHash = createContentHash(story.title);
+      
+      // Si l'illustration de couverture existe et correspond au titre actuel
+      if (existingCover && existingCover.page_content_hash === titleHash) {
+        const updatedPages = storyPages.map(page => 
+          page.id === 0 ? { ...page, illustration: existingCover.illustration_url } : page
+        );
+        setPages(updatedPages);
+      } else {
+        // Initialiser les pages sans illustrations
+        setPages(storyPages);
+        // Générer uniquement l'illustration de couverture
+        generateCoverIllustration();
+      }
+    } catch (error) {
+      console.error('Erreur chargement couverture:', error);
+      setPages(storyPages);
+      generateCoverIllustration();
+    }
+  };
+
+  const generateCoverIllustration = async () => {
+    try {
+      setLoadingIllustrations(prev => ({ ...prev, [0]: true }));
+      
+      const { data, error } = await supabase.functions.invoke('generate-illustration', {
+        body: {
+          theme: story.title,
+          childName: "l'enfant",
+          storyTitle: story.title,
+          pageContent: `Couverture du livre: "${story.title}". Une belle illustration de couverture avec le titre visible.`
+        }
+      });
 
       if (error) throw error;
 
-      if (existingIllustrations) {
-        // Créer un map des illustrations existantes
-        const illustrationMap = new Map();
-        existingIllustrations.forEach(ill => {
-          illustrationMap.set(ill.page_number, {
-            url: ill.illustration_url,
-            hash: ill.page_content_hash
-          });
+      // Sauvegarder l'illustration de couverture en base de données
+      const titleHash = createContentHash(story.title);
+      const { error: saveError } = await supabase
+        .from('story_page_illustrations')
+        .upsert({
+          story_id: story.id,
+          page_number: 0,
+          page_content_hash: titleHash,
+          illustration_url: data.imageUrl
+        }, { 
+          onConflict: 'story_id,page_number',
+          ignoreDuplicates: false 
         });
 
-        // Mettre à jour les pages avec les illustrations existantes et valides
-        const updatedPages = storyPages.map(page => {
-          const existing = illustrationMap.get(page.id);
-          const currentHash = createContentHash(page.text);
-          
-          // Utiliser l'illustration existante seulement si le hash correspond
-          if (existing && existing.hash === currentHash) {
-            return { ...page, illustration: existing.url };
-          }
-          return page;
-        });
-
-        setPages(updatedPages);
-
-        // Générer les illustrations manquantes ou obsolètes
-        updatedPages.forEach((page) => {
-          if (!page.illustration) {
-            generateIllustrationForPage(page.text, page.id);
-          }
-        });
-      } else {
-        // Aucune illustration existante, générer toutes
-        storyPages.forEach((page) => {
-          generateIllustrationForPage(page.text, page.id);
-        });
+      if (saveError) {
+        console.error('Erreur sauvegarde couverture:', saveError);
       }
+
+      setPages(prevPages => prevPages.map(page => 
+        page.id === 0 
+          ? { ...page, illustration: data.imageUrl }
+          : page
+      ));
     } catch (error) {
-      console.error('Erreur chargement illustrations:', error);
-      // En cas d'erreur, générer toutes les illustrations
-      storyPages.forEach((page) => {
-        generateIllustrationForPage(page.text, page.id);
-      });
+      console.error('Erreur génération couverture:', error);
+    } finally {
+      setLoadingIllustrations(prev => ({ ...prev, [0]: false }));
     }
   };
 
@@ -155,8 +179,8 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
       });
     }
 
-    // Charger les illustrations existantes et générer les manquantes
-    loadExistingIllustrations(storyPages);
+    // Charger l'illustration de couverture
+    loadCoverIllustration(storyPages);
   }, [story]);
 
   const handlePageChange = (direction: 'next' | 'prev') => {
@@ -218,37 +242,47 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
               
               {/* Text Side */}
               <div className="space-y-4">
+                {/* Titre sur la première page */}
+                {currentPage === 0 && (
+                  <h1 className="text-2xl font-bold text-center text-primary mb-6">
+                    {story.title}
+                  </h1>
+                )}
                 <p className="text-lg leading-relaxed text-foreground font-medium">
                   {pages[currentPage]?.text}
                 </p>
               </div>
 
-              {/* Illustration Side */}
+              {/* Illustration Side - Seulement pour la première page */}
               <div className="flex items-center justify-center">
-                {loadingIllustrations[currentPage] ? (
-                  <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="animate-spin mb-2">
-                        <BookOpen className="w-8 h-8 text-primary mx-auto" />
+                {currentPage === 0 ? (
+                  loadingIllustrations[0] ? (
+                    <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="animate-spin mb-2">
+                          <BookOpen className="w-8 h-8 text-primary mx-auto" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Génération de la couverture...</p>
                       </div>
-                      <p className="text-sm text-muted-foreground">Génération de l'illustration...</p>
                     </div>
-                  </div>
-                ) : pages[currentPage]?.illustration ? (
-                  <img 
-                    src={pages[currentPage].illustration} 
-                    alt={`Illustration page ${currentPage + 1}`}
-                    className="max-w-full h-auto rounded-lg shadow-lg max-h-64"
-                    onError={(e) => {
-                      // En cas d'erreur de chargement, afficher l'image par défaut
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      target.nextElementSibling?.classList.remove('hidden');
-                    }}
-                  />
+                  ) : pages[0]?.illustration ? (
+                    <img 
+                      src={pages[0].illustration} 
+                      alt={`Couverture de ${story.title}`}
+                      className="max-w-full h-auto rounded-lg shadow-lg max-h-80"
+                    />
+                  ) : (
+                    <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
+                      <BookOpen className="w-16 h-16 text-muted-foreground" />
+                    </div>
+                  )
                 ) : (
-                  <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
-                    <BookOpen className="w-16 h-16 text-muted-foreground" />
+                  // Espace vide pour les autres pages (pas d'illustration)
+                  <div className="w-64 h-64 flex items-center justify-center">
+                    <div className="text-center text-muted-foreground">
+                      <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Page {currentPage + 1}</p>
+                    </div>
                   </div>
                 )}
               </div>
