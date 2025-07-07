@@ -267,19 +267,85 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
                 Page précédente
               </Button>
 
+              {/* Pagination adaptative */}
               <div className="flex items-center gap-2">
-                {pages.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentPage(index)}
-                    className={cn(
-                      "w-3 h-3 rounded-full transition-all",
-                      index === currentPage 
-                        ? "bg-primary scale-125" 
-                        : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                {pages.length <= 10 ? (
+                  // Points ronds pour les livres courts
+                  pages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentPage(index)}
+                      className={cn(
+                        "w-3 h-3 rounded-full transition-all",
+                        index === currentPage 
+                          ? "bg-primary scale-125" 
+                          : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                      )}
+                    />
+                  ))
+                ) : (
+                  // Pagination numérotée pour les livres longs
+                  <div className="flex items-center gap-1">
+                    {/* Première page */}
+                    {currentPage > 2 && (
+                      <>
+                        <button
+                          onClick={() => setCurrentPage(0)}
+                          className={cn(
+                            "px-3 py-1 rounded-md text-sm font-medium transition-all",
+                            "bg-muted hover:bg-muted/80 text-muted-foreground"
+                          )}
+                        >
+                          1
+                        </button>
+                        {currentPage > 3 && (
+                          <span className="text-muted-foreground px-1">...</span>
+                        )}
+                      </>
                     )}
-                  />
-                ))}
+                    
+                    {/* Pages autour de la page courante */}
+                    {Array.from({ length: Math.min(5, pages.length) }, (_, i) => {
+                      const start = Math.max(0, Math.min(currentPage - 2, pages.length - 5));
+                      const pageIndex = start + i;
+                      
+                      if (pageIndex >= pages.length) return null;
+                      
+                      return (
+                        <button
+                          key={pageIndex}
+                          onClick={() => setCurrentPage(pageIndex)}
+                          className={cn(
+                            "px-3 py-1 rounded-md text-sm font-medium transition-all",
+                            pageIndex === currentPage 
+                              ? "bg-primary text-primary-foreground" 
+                              : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {pageIndex + 1}
+                        </button>
+                      );
+                    })}
+                    
+                    {/* Dernière page */}
+                    {currentPage < pages.length - 3 && (
+                      <>
+                        {currentPage < pages.length - 4 && (
+                          <span className="text-muted-foreground px-1">...</span>
+                        )}
+                        <button
+                          onClick={() => setCurrentPage(pages.length - 1)}
+                          className={cn(
+                            "px-3 py-1 rounded-md text-sm font-medium transition-all",
+                            "bg-muted hover:bg-muted/80 text-muted-foreground"
+                          )}
+                        >
+                          {pages.length}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
 
               <Button
