@@ -126,7 +126,12 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen" style={{background: "var(--gradient-rainbow)"}}>
+    <div className="min-h-screen mystical-background" style={{background: "var(--gradient-rainbow)"}}>
+      {/* Mystical effects */}
+      <div className="mystical-stars"></div>
+      <div className="mystical-orb"></div>
+      <div className="mystical-orb"></div>
+      <div className="mystical-orb"></div>
       {/* Header */}
       <div className="bg-white/95 backdrop-blur-sm border-b shadow-lg">
         <div className="container mx-auto px-4 py-4">
