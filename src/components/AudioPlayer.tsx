@@ -96,7 +96,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
       let errorMessage = "Impossible de générer l'audio.";
       
       if (error.message.includes("ELEVENLABS_API_KEY")) {
-        errorMessage = "Clé API ElevenLabs manquante. Veuillez la configurer dans les paramètres Supabase.";
+        errorMessage = error.message;
         setAudioError("API_KEY_MISSING");
       } else if (error.message.includes("401") || error.message.includes("unauthorized")) {
         errorMessage = "Clé API ElevenLabs invalide. Vérifiez votre configuration.";

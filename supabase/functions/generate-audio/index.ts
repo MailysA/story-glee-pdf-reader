@@ -34,7 +34,8 @@ serve(async (req) => {
       headers: {
         'Accept': 'audio/mpeg',
         'Content-Type': 'application/json',
-        'xi-api-key': Deno.env.get('ELEVENLABS_API_KEY') || 'sk_ceb270edfe61cefb68e6b2811203d2194ecf7a6d3aaf16d8',
+        'xi-api-key': 'sk_ceb270edfe61cefb68e6b2811203d2194ecf7a6d3aaf16d8',
+            // 'xi-api-key': Deno.env.get('ELEVENLABS_API_KEY') || 'sk_ceb270edfe61cefb68e6b2811203d2194ecf7a6d3aaf16d8',
       },
       body: JSON.stringify({
         text: text,
