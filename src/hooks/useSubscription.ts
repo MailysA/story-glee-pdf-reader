@@ -30,12 +30,13 @@ export const useSubscription = () => {
         return;
       }
 
-      // Vérifier si l'utilisateur a un profil premium dans la base de données
-      // Pour l'instant, mode gratuit par défaut
+      // Vérifier si l'utilisateur a un statut premium dans localStorage (simulation)
+      const isPremiumLocal = localStorage.getItem(`premium_${user.id}`) === 'true';
+      
       setSubscription({
-        isPremium: false,
-        subscriptionTier: null,
-        subscriptionEnd: null,
+        isPremium: isPremiumLocal,
+        subscriptionTier: isPremiumLocal ? 'Premium' : null,
+        subscriptionEnd: isPremiumLocal ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null, // 30 jours
         loading: false
       });
     } catch (error) {
@@ -49,12 +50,30 @@ export const useSubscription = () => {
     }
   };
 
+  const activatePremium = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      localStorage.setItem(`premium_${user.id}`, 'true');
+      await checkSubscription();
+    }
+  };
+
+  const deactivatePremium = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      localStorage.removeItem(`premium_${user.id}`);
+      await checkSubscription();
+    }
+  };
+
   useEffect(() => {
     checkSubscription();
   }, []);
 
   return {
     ...subscription,
-    refreshSubscription: checkSubscription
+    refreshSubscription: checkSubscription,
+    activatePremium,
+    deactivatePremium
   };
 };

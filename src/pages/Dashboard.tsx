@@ -23,8 +23,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
   const navigate = useNavigate();
-  const { storiesCount, downloadsCount, audioGenerationsCount } = useUsageLimits();
-  const { isPremium, subscriptionTier } = useSubscription();
+  const { storiesCount, downloadsCount, audioGenerationsCount, refreshUsage } = useUsageLimits();
+  const { isPremium, subscriptionTier, refreshSubscription, activatePremium, deactivatePremium } = useSubscription();
 
   useEffect(() => {
     // Set up auth state listener
@@ -70,16 +70,14 @@ export default function Dashboard() {
 
   const handleUnsubscribe = async () => {
     try {
-      // Simuler le désabonnement (dans un vrai projet, appeler l'API de paiement)
-      // Ici on va juste réinitialiser le statut local
+      // Désactiver le premium
+      await deactivatePremium();
+      await refreshUsage();
       
       toast({
         title: "Désabonnement réussi",
-        description: "Votre abonnement a été annulé. Vous conservez l'accès aux fonctionnalités premium jusqu'à la fin de votre période de facturation.",
+        description: "Votre abonnement a été annulé. Vous êtes maintenant sur le plan gratuit.",
       });
-      
-      // Forcer la mise à jour du statut d'abonnement
-      window.location.reload();
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -353,14 +351,25 @@ export default function Dashboard() {
             <DialogTitle className="sr-only">Choisir un plan</DialogTitle>
           </DialogHeader>
           <Paywall 
-            onPurchase={(planId) => {
+            onPurchase={async (planId) => {
               console.log("Plan sélectionné:", planId);
-              // TODO: Intégrer avec Stripe
               setShowPaywall(false);
-              toast({
-                title: "Plan sélectionné",
-                description: `Vous avez choisi le plan: ${planId}`,
-              });
+              
+              if (planId === "monthly") {
+                // Activer le premium
+                await activatePremium();
+                await refreshUsage();
+                
+                toast({
+                  title: "Bienvenue Premium !",
+                  description: "Votre abonnement Premium a été activé avec succès.",
+                });
+              } else {
+                toast({
+                  title: "Plan gratuit sélectionné",
+                  description: "Vous continuez avec le plan gratuit.",
+                });
+              }
             }}
           />
         </DialogContent>
