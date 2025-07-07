@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const STORY_LIMIT = 10;
 const DOWNLOAD_LIMIT = 3;
@@ -33,6 +34,7 @@ export const useUsageLimits = () => {
     isLoading: true,
   });
   const { toast } = useToast();
+  const { isPremium } = useSubscription();
 
   const fetchUsage = async () => {
     try {
@@ -79,7 +81,7 @@ export const useUsageLimits = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
-      if (!usage.canDownload) {
+      if (!usage.canDownload && !isPremium) {
         toast({
           title: "Limite atteinte",
           description: "Vous avez atteint la limite de téléchargements gratuits (3). Passez au premium pour plus !",
@@ -88,18 +90,20 @@ export const useUsageLimits = () => {
         return false;
       }
 
-      // Incrémenter le compteur de téléchargements
-      const { error } = await supabase
-        .from("user_usage")
-        .upsert({
-          user_id: user.id,
-          downloads_count: usage.downloadsCount + 1,
-        }, { 
-          onConflict: 'user_id',
-          ignoreDuplicates: false 
-        });
+      // Incrémenter le compteur de téléchargements seulement si pas premium
+      if (!isPremium) {
+        const { error } = await supabase
+          .from("user_usage")
+          .upsert({
+            user_id: user.id,
+            downloads_count: usage.downloadsCount + 1,
+          }, { 
+            onConflict: 'user_id',
+            ignoreDuplicates: false 
+          });
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       // Rafraîchir les données
       await fetchUsage();
@@ -120,7 +124,7 @@ export const useUsageLimits = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
-      if (!usage.canGenerateAudio) {
+      if (!usage.canGenerateAudio && !isPremium) {
         toast({
           title: "Limite atteinte",
           description: "Vous avez atteint la limite de générations audio gratuites (5). Passez au premium pour plus !",
@@ -129,18 +133,20 @@ export const useUsageLimits = () => {
         return false;
       }
 
-      // Incrémenter le compteur de générations audio
-      const { error } = await supabase
-        .from("user_usage")
-        .upsert({
-          user_id: user.id,
-          audio_generations_count: usage.audioGenerationsCount + 1,
-        }, { 
-          onConflict: 'user_id',
-          ignoreDuplicates: false 
-        });
+      // Incrémenter le compteur de générations audio seulement si pas premium
+      if (!isPremium) {
+        const { error } = await supabase
+          .from("user_usage")
+          .upsert({
+            user_id: user.id,
+            audio_generations_count: usage.audioGenerationsCount + 1,
+          }, { 
+            onConflict: 'user_id',
+            ignoreDuplicates: false 
+          });
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
       // Rafraîchir les données
       await fetchUsage();

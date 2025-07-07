@@ -33,9 +33,9 @@ export const UsageLimitCard = ({
     
     switch (subscriptionTier) {
       case 'Premium':
-        return { stories: 100, downloads: 50, audioGenerations: 100 };
+        return { stories: 30, downloads: -1, audioGenerations: 30 }; // Téléchargements illimités en premium
       case 'Premium+':
-        return { stories: 500, downloads: 200, audioGenerations: 500 };
+        return { stories: 500, downloads: -1, audioGenerations: 500 };
       case 'Enterprise':
         return { stories: -1, downloads: -1, audioGenerations: -1 }; // Illimité
       default:

@@ -30,48 +30,31 @@ export function Paywall({ onPurchase }: PaywallProps) {
       period: "",
       description: "Parfait pour commencer",
       features: [
-        "1 histoire par semaine",
-        "Texte + image de couverture",
-        "Audio en streaming uniquement",
-        "Historique limité à 3 histoires"
+        "10 histoires par mois",
+        "3 téléchargements par mois",
+        "5 générations audio par mois",
+        "Historique limité"
       ],
       cta: "Commencer gratuitement",
       popular: false,
       ribbon: null,
-      legal: "Quotas se réinitialisent chaque semaine."
+      legal: "Quotas se réinitialisent chaque mois."
     },
     {
       id: "monthly",
-      title: "Mensuel",
+      title: "Premium",
       price: "8,99 €",
       period: "/ mois",
       description: "Essai gratuit de 7 jours",
       features: [
         "30 histoires par mois",
         "Téléchargements PDF & MP3 illimités",
-        "Narration multi-voix premium",
+        "30 générations audio par mois",
         "Historique illimité"
       ],
       cta: "Essayer 7 jours gratuits",
       popular: true,
       ribbon: "Populaire",
-      legal: "Annulable à tout moment. Les quotas se réinitialisent chaque mois."
-    },
-    {
-      id: "yearly",
-      title: "Annuel",
-      price: "89 €",
-      period: "/ an",
-      description: "≈ 2 mois gratuits",
-      features: [
-        "360 histoires par an (30/mois)",
-        "Téléchargements PDF & MP3 illimités",
-        "Narration multi-voix premium",
-        "Historique illimité"
-      ],
-      cta: "Choisir l'annuel",
-      popular: false,
-      ribbon: "Économique",
       legal: "Annulable à tout moment. Les quotas se réinitialisent chaque mois."
     }
   ];
@@ -87,7 +70,7 @@ export function Paywall({ onPurchase }: PaywallProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-4xl mx-auto">
         {plans.map((plan) => (
           <Card
             key={plan.id}
@@ -110,7 +93,6 @@ export function Paywall({ onPurchase }: PaywallProps) {
               <div className="flex justify-center mb-2">
                 {plan.id === "free" && <Zap className="w-8 h-8 text-muted-foreground" />}
                 {plan.id === "monthly" && <Crown className="w-8 h-8 text-primary" />}
-                {plan.id === "yearly" && <Crown className="w-8 h-8 text-primary" />}
               </div>
               <CardTitle className="text-2xl font-bold">{plan.title}</CardTitle>
               <div className="flex items-baseline justify-center gap-1">
@@ -150,66 +132,6 @@ export function Paywall({ onPurchase }: PaywallProps) {
             </CardContent>
           </Card>
         ))}
-
-        {/* Credit Packs Card */}
-        <Card className="relative rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-          <CardHeader className="text-center pb-4">
-            <div className="flex justify-center mb-2">
-              <CreditCard className="w-8 h-8 text-accent" />
-            </div>
-            <CardTitle className="text-2xl font-bold">Crédits à la carte</CardTitle>
-            <CardDescription className="text-sm font-medium text-accent">
-              Payez selon vos besoins
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div>
-                  <p className="font-medium">5 histoires</p>
-                  <p className="text-sm text-muted-foreground">0,60 € / histoire</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-bold">3 €</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div>
-                  <p className="font-medium">20 histoires</p>
-                  <p className="text-sm text-muted-foreground">0,50 € / histoire</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-bold">10 €</p>
-                  <Badge variant="secondary" className="text-xs">Meilleur prix</Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Button
-                onClick={() => purchase("credits-5")}
-                variant="outline"
-                className="w-full"
-                size="sm"
-              >
-                Acheter 5 crédits
-              </Button>
-              <Button
-                onClick={() => purchase("credits-20")}
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-                size="sm"
-              >
-                Acheter 20 crédits
-              </Button>
-            </div>
-
-            <p className="text-xs text-muted-foreground text-center px-2">
-              Les crédits n'expirent jamais. Utilisez-les quand vous voulez.
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       <div className="text-center">

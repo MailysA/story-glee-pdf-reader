@@ -9,7 +9,6 @@ import { BookOpen, Download, Play, Pause, Trash2, Calendar, User, Heart, Filter 
 import { StoryReader } from "./StoryReader";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
-import { UsageLimitCard } from "./UsageLimitCard";
 
 interface Story {
   id: string;
@@ -157,22 +156,6 @@ export function StoryLibrary() {
 
   return (
     <div className="space-y-6">
-      {/* Usage Limit Card */}
-      <UsageLimitCard
-        storiesUsed={storiesCount}
-        storiesLimit={10}
-        downloadsUsed={downloadsCount}
-        downloadsLimit={3}
-        audioGenerationsUsed={audioGenerationsCount}
-        audioGenerationsLimit={5}
-        onUpgrade={() => {
-          toast({
-            title: "Premium bientôt disponible !",
-            description: "Nous préparons l'abonnement premium avec des fonctionnalités avancées.",
-          });
-        }}
-      />
-
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
         <div className="flex items-center gap-2">
