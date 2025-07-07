@@ -177,12 +177,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen mystical-background" style={{background: "var(--gradient-rainbow)"}}>
-      {/* Mystical effects */}
-      <div className="mystical-stars"></div>
-      <div className="mystical-orb"></div>
-      <div className="mystical-orb"></div>
-      <div className="mystical-orb"></div>
+    <div className="min-h-screen" style={{background: "var(--gradient-primary)"}}>
+      
       {/* Header */}
       <DashboardHeader
         activeTab={activeTab}
