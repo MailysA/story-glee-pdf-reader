@@ -229,185 +229,182 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
           <SandmanAnimation 
             isActive={showSandAnimation || isFlipping}
             direction={isFlipping ? (currentPage > 0 ? 'right' : 'left') : 'none'}
-            className="absolute inset-0 z-10 pointer-events-none"
-          />
-          
-          {/* Book Spine Effect */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/10 to-transparent"></div>
-          
-          {/* Current Page */}
-          <div className={cn(
-            "relative z-20 p-8 h-full min-h-[600px] flex flex-col transition-all duration-500",
-            isFlipping && "scale-95 opacity-50"
-          )}>
-            
-            {/* Page Header */}
-            <div className="flex justify-between items-center mb-6">
-              <div className="text-sm text-muted-foreground">
-                {story.title}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Page {currentPage + 1} / {pages.length}
-              </div>
-            </div>
-
-            {/* Page Content */}
-            <div className="flex-1 grid md:grid-cols-2 gap-8 items-center">
+            className="absolute inset-0 z-10"
+          >
+            {/* Current Page Content */}
+            <div className={cn(
+              "relative z-20 p-8 h-full min-h-[600px] flex flex-col transition-all duration-500",
+              isFlipping && "scale-95 opacity-50"
+            )}>
               
-              {/* Text Side */}
-              <div className="space-y-4">
-                {/* Titre sur la première page */}
-                {currentPage === 0 && (
-                  <h1 className="text-2xl font-bold text-center text-primary mb-6">
-                    {story.title}
-                  </h1>
-                )}
-                <p className="text-lg leading-relaxed text-foreground font-medium">
-                  {pages[currentPage]?.text}
-                </p>
+              {/* Page Header */}
+              <div className="flex justify-between items-center mb-6">
+                <div className="text-sm text-muted-foreground">
+                  {story.title}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Page {currentPage + 1} / {pages.length}
+                </div>
               </div>
 
-              {/* Illustration Side - Seulement pour la première page */}
-              <div className="flex items-center justify-center">
-                {currentPage === 0 ? (
-                  loadingIllustrations[0] ? (
-                    <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="animate-spin mb-2">
-                          <BookOpen className="w-8 h-8 text-primary mx-auto" />
+              {/* Page Content */}
+              <div className="flex-1 grid md:grid-cols-2 gap-8 items-center">
+                
+                {/* Text Side */}
+                <div className="space-y-4">
+                  {/* Titre sur la première page */}
+                  {currentPage === 0 && (
+                    <h1 className="text-2xl font-bold text-center text-primary mb-6">
+                      {story.title}
+                    </h1>
+                  )}
+                  <p className="text-lg leading-relaxed text-foreground font-medium">
+                    {pages[currentPage]?.text}
+                  </p>
+                </div>
+
+                {/* Illustration Side - Seulement pour la première page */}
+                <div className="flex items-center justify-center">
+                  {currentPage === 0 ? (
+                    loadingIllustrations[0] ? (
+                      <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="animate-spin mb-2">
+                            <BookOpen className="w-8 h-8 text-primary mx-auto" />
+                          </div>
+                          <p className="text-sm text-muted-foreground">Génération de la couverture...</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">Génération de la couverture...</p>
+                      </div>
+                    ) : pages[0]?.illustration ? (
+                      <img 
+                        src={pages[0].illustration} 
+                        alt={`Couverture de ${story.title}`}
+                        className="max-w-full h-auto rounded-lg shadow-lg max-h-80"
+                      />
+                    ) : (
+                      <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
+                        <BookOpen className="w-16 h-16 text-muted-foreground" />
+                      </div>
+                    )
+                  ) : (
+                    // Espace vide pour les autres pages (pas d'illustration)
+                    <div className="w-64 h-64 flex items-center justify-center">
+                      <div className="text-center text-muted-foreground">
+                        <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Page {currentPage + 1}</p>
                       </div>
                     </div>
-                  ) : pages[0]?.illustration ? (
-                    <img 
-                      src={pages[0].illustration} 
-                      alt={`Couverture de ${story.title}`}
-                      className="max-w-full h-auto rounded-lg shadow-lg max-h-80"
-                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Page Navigation */}
+              <div className="flex justify-between items-center mt-8">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => handlePageChange('prev')}
+                  disabled={currentPage === 0 || isFlipping}
+                  className="flex items-center gap-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Page précédente
+                </Button>
+
+                {/* Pagination adaptative */}
+                <div className="flex items-center gap-2">
+                  {pages.length <= 10 ? (
+                    // Points ronds pour les livres courts
+                    pages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentPage(index)}
+                        className={cn(
+                          "w-3 h-3 rounded-full transition-all",
+                          index === currentPage 
+                            ? "bg-primary scale-125" 
+                            : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                        )}
+                      />
+                    ))
                   ) : (
-                    <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-16 h-16 text-muted-foreground" />
-                    </div>
-                  )
-                ) : (
-                  // Espace vide pour les autres pages (pas d'illustration)
-                  <div className="w-64 h-64 flex items-center justify-center">
-                    <div className="text-center text-muted-foreground">
-                      <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Page {currentPage + 1}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Page Navigation */}
-            <div className="flex justify-between items-center mt-8">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => handlePageChange('prev')}
-                disabled={currentPage === 0 || isFlipping}
-                className="flex items-center gap-2"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Page précédente
-              </Button>
-
-              {/* Pagination adaptative */}
-              <div className="flex items-center gap-2">
-                {pages.length <= 10 ? (
-                  // Points ronds pour les livres courts
-                  pages.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentPage(index)}
-                      className={cn(
-                        "w-3 h-3 rounded-full transition-all",
-                        index === currentPage 
-                          ? "bg-primary scale-125" 
-                          : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                    // Pagination numérotée pour les livres longs
+                    <div className="flex items-center gap-1">
+                      {/* Première page */}
+                      {currentPage > 2 && (
+                        <>
+                          <button
+                            onClick={() => setCurrentPage(0)}
+                            className={cn(
+                              "px-3 py-1 rounded-md text-sm font-medium transition-all",
+                              "bg-muted hover:bg-muted/80 text-muted-foreground"
+                            )}
+                          >
+                            1
+                          </button>
+                          {currentPage > 3 && (
+                            <span className="text-muted-foreground px-1">...</span>
+                          )}
+                        </>
                       )}
-                    />
-                  ))
-                ) : (
-                  // Pagination numérotée pour les livres longs
-                  <div className="flex items-center gap-1">
-                    {/* Première page */}
-                    {currentPage > 2 && (
-                      <>
-                        <button
-                          onClick={() => setCurrentPage(0)}
-                          className={cn(
-                            "px-3 py-1 rounded-md text-sm font-medium transition-all",
-                            "bg-muted hover:bg-muted/80 text-muted-foreground"
-                          )}
-                        >
-                          1
-                        </button>
-                        {currentPage > 3 && (
-                          <span className="text-muted-foreground px-1">...</span>
-                        )}
-                      </>
-                    )}
-                    
-                    {/* Pages autour de la page courante */}
-                    {Array.from({ length: Math.min(5, pages.length) }, (_, i) => {
-                      const start = Math.max(0, Math.min(currentPage - 2, pages.length - 5));
-                      const pageIndex = start + i;
                       
-                      if (pageIndex >= pages.length) return null;
+                      {/* Pages autour de la page courante */}
+                      {Array.from({ length: Math.min(5, pages.length) }, (_, i) => {
+                        const start = Math.max(0, Math.min(currentPage - 2, pages.length - 5));
+                        const pageIndex = start + i;
+                        
+                        if (pageIndex >= pages.length) return null;
+                        
+                        return (
+                          <button
+                            key={pageIndex}
+                            onClick={() => setCurrentPage(pageIndex)}
+                            className={cn(
+                              "px-3 py-1 rounded-md text-sm font-medium transition-all",
+                              pageIndex === currentPage 
+                                ? "bg-primary text-primary-foreground" 
+                                : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {pageIndex + 1}
+                          </button>
+                        );
+                      })}
                       
-                      return (
-                        <button
-                          key={pageIndex}
-                          onClick={() => setCurrentPage(pageIndex)}
-                          className={cn(
-                            "px-3 py-1 rounded-md text-sm font-medium transition-all",
-                            pageIndex === currentPage 
-                              ? "bg-primary text-primary-foreground" 
-                              : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+                      {/* Dernière page */}
+                      {currentPage < pages.length - 3 && (
+                        <>
+                          {currentPage < pages.length - 4 && (
+                            <span className="text-muted-foreground px-1">...</span>
                           )}
-                        >
-                          {pageIndex + 1}
-                        </button>
-                      );
-                    })}
-                    
-                    {/* Dernière page */}
-                    {currentPage < pages.length - 3 && (
-                      <>
-                        {currentPage < pages.length - 4 && (
-                          <span className="text-muted-foreground px-1">...</span>
-                        )}
-                        <button
-                          onClick={() => setCurrentPage(pages.length - 1)}
-                          className={cn(
-                            "px-3 py-1 rounded-md text-sm font-medium transition-all",
-                            "bg-muted hover:bg-muted/80 text-muted-foreground"
-                          )}
-                        >
-                          {pages.length}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
+                          <button
+                            onClick={() => setCurrentPage(pages.length - 1)}
+                            className={cn(
+                              "px-3 py-1 rounded-md text-sm font-medium transition-all",
+                              "bg-muted hover:bg-muted/80 text-muted-foreground"
+                            )}
+                          >
+                            {pages.length}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => handlePageChange('next')}
-                disabled={currentPage === pages.length - 1 || isFlipping}
-                className="flex items-center gap-2"
-              >
-                Page suivante
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => handlePageChange('next')}
+                  disabled={currentPage === pages.length - 1 || isFlipping}
+                  className="flex items-center gap-2"
+                >
+                  Page suivante
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
-          </div>
+          </SandmanAnimation>
 
           {/* Page Flip Animation Overlay */}
           {isFlipping && (
