@@ -99,10 +99,30 @@ export default function Dashboard() {
   };
 
   const handleUnsubscribe = async () => {
-    toast({
-      title: "Désabonnement",
-      description: "Votre demande de désabonnement a été enregistrée. Vous recevrez un email de confirmation.",
-    });
+    try {
+      const portalUrl = await openCustomerPortal();
+      
+      if (portalUrl) {
+        // Ouvrir le portail client Stripe dans un nouvel onglet
+        window.open(portalUrl, '_blank');
+        toast({
+          title: "Redirection vers Stripe",
+          description: "Gérez votre abonnement dans le portail client Stripe.",
+        });
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible d'ouvrir le portail de gestion d'abonnement.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'accéder au portail de gestion d'abonnement.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteAccount = async () => {
