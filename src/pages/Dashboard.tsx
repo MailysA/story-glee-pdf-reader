@@ -24,34 +24,64 @@ export default function Dashboard() {
   const [showPaywall, setShowPaywall] = useState(false);
   const navigate = useNavigate();
   const { storiesCount, downloadsCount } = useUsageLimits();
-  const { isPremium, subscriptionTier, activatePremium } = useSubscription();
+  const { isPremium, subscriptionTier, openCustomerPortal, refreshSubscription } = useSubscription();
 
   useEffect(() => {
+    // Check for successful payment from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      // Attendre un peu puis rafraîchir l'abonnement
+      setTimeout(async () => {
+        await refreshSubscription();
+        
+        // Animation de félicitations avec poussière d'étoiles
+        toast({
+          title: "🎉 Bienvenue en Premium !",
+          description: "Vos nouvelles fonctionnalités sont maintenant actives !",
+        });
+        
+        // Déclencher l'animation de poussière d'étoiles
+        const stardust = document.createElement('div');
+        stardust.className = 'stardust-celebration';
+        document.body.appendChild(stardust);
+        setTimeout(() => document.body.removeChild(stardust), 3000);
+      }, 2000);
+      
+      // Nettoyer l'URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (!session) {
           navigate("/auth");
+        } else {
+          // Rafraîchir l'abonnement lors de la connexion
+          await refreshSubscription();
         }
       }
     );
 
     // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
       
       if (!session) {
         navigate("/auth");
+      } else {
+        // Rafraîchir l'abonnement lors du chargement initial
+        await refreshSubscription();
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, refreshSubscription]);
 
   const handleSignOut = async () => {
     try {
@@ -346,28 +376,13 @@ export default function Dashboard() {
               console.log("Plan sélectionné:", planId);
               
               if (planId === "monthly") {
-                // Activer immédiatement le premium
-                await activatePremium();
-                
-                // Fermer le paywall
+                // Fermer le paywall (Stripe s'ouvre dans un nouvel onglet)
                 setShowPaywall(false);
-                
-                // Animation de félicitations avec poussière d'étoiles
-                toast({
-                  title: "🎉 Bienvenue en Premium !",
-                  description: "Vos nouvelles fonctionnalités sont maintenant actives !",
-                });
-                
-                // Déclencher l'animation de poussière d'étoiles
-                const stardust = document.createElement('div');
-                stardust.className = 'stardust-celebration';
-                document.body.appendChild(stardust);
-                setTimeout(() => document.body.removeChild(stardust), 3000);
               } else {
                 setShowPaywall(false);
                 toast({
                   title: "Plan sélectionné",
-                  description: `Vous avez choisi le plan: ${planId}`,
+                  description: `Vous utilisez déjà le plan gratuit !`,
                 });
               }
             }}

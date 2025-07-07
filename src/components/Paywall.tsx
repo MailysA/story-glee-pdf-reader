@@ -2,24 +2,43 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Crown, Zap, CreditCard } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { toast } from "sonner";
 
 interface PaywallProps {
   onPurchase?: (planId: string) => void;
 }
 
 export function Paywall({ onPurchase }: PaywallProps) {
-  // Logic stub for quota checking
-  const checkQuota = (planId: string): boolean => {
-    // TODO: Implement actual quota checking logic
-    console.log(`Checking quota for plan: ${planId}`);
-    return true; // Placeholder
-  };
+  const { createCheckoutSession } = useSubscription();
 
   // Function to handle purchase
-  const purchase = (planId: string) => {
-    console.log(`Purchasing plan: ${planId}`);
+  const purchase = async (planId: string) => {
+    if (planId === "free") {
+      toast.success("Vous utilisez déjà le plan gratuit !");
+      return;
+    }
+
+    if (planId === "monthly") {
+      try {
+        toast.loading("Redirection vers Stripe...");
+        const checkoutUrl = await createCheckoutSession();
+        
+        if (checkoutUrl) {
+          // Ouvrir Stripe checkout dans un nouvel onglet
+          window.open(checkoutUrl, '_blank');
+          toast.dismiss();
+          toast.success("Session de paiement créée avec succès !");
+        } else {
+          toast.error("Erreur lors de la création de la session de paiement");
+        }
+      } catch (error) {
+        toast.error("Erreur lors de la redirection vers Stripe");
+        console.error('Erreur checkout:', error);
+      }
+    }
+    
     onPurchase?.(planId);
-    // TODO: Integrate with Stripe checkout
   };
 
   const plans = [
