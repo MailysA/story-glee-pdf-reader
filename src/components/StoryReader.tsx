@@ -7,6 +7,17 @@ import { AudioPlayer } from "./AudioPlayer";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
+// Fonction utilitaire pour créer un hash simple du contenu
+const createContentHash = (content: string) => {
+  let hash = 0;
+  for (let i = 0; i < content.length; i++) {
+    const char = content.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return hash.toString();
+};
+
 interface StoryPage {
   id: number;
   text: string;
@@ -30,6 +41,60 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
   const [pages, setPages] = useState<StoryPage[]>([]);
   const [loadingIllustrations, setLoadingIllustrations] = useState<{[key: number]: boolean}>({});
 
+  const loadExistingIllustrations = async (storyPages: StoryPage[]) => {
+    try {
+      const { data: existingIllustrations, error } = await supabase
+        .from('story_page_illustrations')
+        .select('page_number, illustration_url, page_content_hash')
+        .eq('story_id', story.id);
+
+      if (error) throw error;
+
+      if (existingIllustrations) {
+        // Créer un map des illustrations existantes
+        const illustrationMap = new Map();
+        existingIllustrations.forEach(ill => {
+          illustrationMap.set(ill.page_number, {
+            url: ill.illustration_url,
+            hash: ill.page_content_hash
+          });
+        });
+
+        // Mettre à jour les pages avec les illustrations existantes et valides
+        const updatedPages = storyPages.map(page => {
+          const existing = illustrationMap.get(page.id);
+          const currentHash = createContentHash(page.text);
+          
+          // Utiliser l'illustration existante seulement si le hash correspond
+          if (existing && existing.hash === currentHash) {
+            return { ...page, illustration: existing.url };
+          }
+          return page;
+        });
+
+        setPages(updatedPages);
+
+        // Générer les illustrations manquantes ou obsolètes
+        updatedPages.forEach((page) => {
+          if (!page.illustration) {
+            generateIllustrationForPage(page.text, page.id);
+          }
+        });
+      } else {
+        // Aucune illustration existante, générer toutes
+        storyPages.forEach((page) => {
+          generateIllustrationForPage(page.text, page.id);
+        });
+      }
+    } catch (error) {
+      console.error('Erreur chargement illustrations:', error);
+      // En cas d'erreur, générer toutes les illustrations
+      storyPages.forEach((page) => {
+        generateIllustrationForPage(page.text, page.id);
+      });
+    }
+  };
+
   const generateIllustrationForPage = async (pageText: string, pageId: number) => {
     try {
       setLoadingIllustrations(prev => ({ ...prev, [pageId]: true }));
@@ -44,6 +109,21 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
       });
 
       if (error) throw error;
+
+      // Sauvegarder l'illustration en base de données
+      const contentHash = createContentHash(pageText);
+      const { error: saveError } = await supabase
+        .from('story_page_illustrations')
+        .upsert({
+          story_id: story.id,
+          page_number: pageId,
+          page_content_hash: contentHash,
+          illustration_url: data.imageUrl
+        });
+
+      if (saveError) {
+        console.error('Erreur sauvegarde illustration:', saveError);
+      }
 
       setPages(prevPages => prevPages.map(page => 
         page.id === pageId 
@@ -72,12 +152,8 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
       });
     }
 
-    setPages(storyPages);
-
-    // Générer les illustrations pour chaque page
-    storyPages.forEach((page) => {
-      generateIllustrationForPage(page.text, page.id);
-    });
+    // Charger les illustrations existantes et générer les manquantes
+    loadExistingIllustrations(storyPages);
   }, [story]);
 
   const handlePageChange = (direction: 'next' | 'prev') => {
