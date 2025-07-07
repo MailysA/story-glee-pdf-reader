@@ -16,7 +16,7 @@ export const useSubscription = () => {
     loading: true
   });
 
-  const checkSubscription = async () => {
+  const checkSubscription = async (showToast = false) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -35,6 +35,14 @@ export const useSubscription = () => {
       
       if (error) {
         console.error('Erreur lors de la vérification Stripe:', error);
+        if (showToast) {
+          const { toast } = await import("@/hooks/use-toast");
+          toast({
+            title: "Erreur de vérification",
+            description: "Impossible de vérifier votre abonnement. Veuillez réessayer.",
+            variant: "destructive",
+          });
+        }
         setSubscription({
           isPremium: false,
           subscriptionTier: null,
@@ -50,8 +58,24 @@ export const useSubscription = () => {
         subscriptionEnd: data?.subscription_end || null,
         loading: false
       });
+
+      if (showToast && data?.subscribed) {
+        const { toast } = await import("@/hooks/use-toast");
+        toast({
+          title: "Abonnement vérifié",
+          description: `Votre plan ${data.subscription_tier} est actif.`,
+        });
+      }
     } catch (error) {
       console.error('Erreur lors de la vérification de l\'abonnement:', error);
+      if (showToast) {
+        const { toast } = await import("@/hooks/use-toast");
+        toast({
+          title: "Erreur réseau",
+          description: "Impossible de contacter nos serveurs. Vérifiez votre connexion.",
+          variant: "destructive",
+        });
+      }
       setSubscription({
         isPremium: false,
         subscriptionTier: null,
@@ -67,28 +91,57 @@ export const useSubscription = () => {
       
       if (error) {
         console.error('Erreur création session Stripe:', error);
+        const { toast } = await import("@/hooks/use-toast");
+        toast({
+          title: "Erreur de paiement",
+          description: error.message || "Impossible de créer la session de paiement",
+          variant: "destructive",
+        });
         return null;
       }
 
       return data?.url;
     } catch (error) {
       console.error('Erreur lors de la création de la session:', error);
+      const { toast } = await import("@/hooks/use-toast");
+      toast({
+        title: "Erreur réseau",
+        description: "Impossible de contacter le service de paiement",
+        variant: "destructive",
+      });
       return null;
     }
   };
 
   const openCustomerPortal = async () => {
     try {
+      const { toast } = await import("@/hooks/use-toast");
+      toast({
+        title: "Ouverture du portail...",
+        description: "Redirection vers la gestion de votre abonnement",
+      });
+
       const { data, error } = await supabase.functions.invoke('customer-portal');
       
       if (error) {
         console.error('Erreur portail client Stripe:', error);
+        toast({
+          title: "Erreur",
+          description: error.message || "Impossible d'ouvrir le portail de gestion",
+          variant: "destructive",
+        });
         return null;
       }
 
       return data?.url;
     } catch (error) {
       console.error('Erreur lors de l\'ouverture du portail:', error);
+      const { toast } = await import("@/hooks/use-toast");
+      toast({
+        title: "Erreur réseau",
+        description: "Impossible de contacter le service de gestion",
+        variant: "destructive",
+      });
       return null;
     }
   };

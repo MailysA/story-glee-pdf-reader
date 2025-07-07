@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CreditCard, LogOut, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 interface AccountManagementProps {
   isPremium: boolean;
-  onUnsubscribe: () => void;
-  onSignOut: () => void;
-  onDeleteAccount: () => void;
+  onUnsubscribe: () => Promise<void>;
+  onSignOut: () => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
 }
 
 export function AccountManagement({ 
@@ -15,6 +16,17 @@ export function AccountManagement({
   onSignOut, 
   onDeleteAccount 
 }: AccountManagementProps) {
+  const [isLoading, setIsLoading] = useState<string | null>(null);
+
+  const handleAction = async (action: () => Promise<void>, actionType: string) => {
+    setIsLoading(actionType);
+    try {
+      await action();
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
   return (
     <>
       {/* Premium subscription management */}
@@ -42,8 +54,12 @@ export function AccountManagement({
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Annuler</AlertDialogCancel>
-                <AlertDialogAction onClick={onUnsubscribe} className="bg-orange-600 hover:bg-orange-700">
-                  Confirmer le désabonnement
+                <AlertDialogAction 
+                  onClick={() => handleAction(onUnsubscribe, 'unsubscribe')} 
+                  className="bg-orange-600 hover:bg-orange-700"
+                  disabled={isLoading === 'unsubscribe'}
+                >
+                  {isLoading === 'unsubscribe' ? 'Traitement...' : 'Confirmer le désabonnement'}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -56,11 +72,12 @@ export function AccountManagement({
         <Button
           variant="outline"
           size="sm"
-          onClick={onSignOut}
+          onClick={() => handleAction(onSignOut, 'signout')}
+          disabled={isLoading === 'signout'}
           className="w-full flex items-center gap-2"
         >
           <LogOut className="w-4 h-4" />
-          Déconnexion
+          {isLoading === 'signout' ? 'Déconnexion...' : 'Déconnexion'}
         </Button>
         
         <AlertDialog>
@@ -83,8 +100,12 @@ export function AccountManagement({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Annuler</AlertDialogCancel>
-              <AlertDialogAction onClick={onDeleteAccount} className="bg-red-600 hover:bg-red-700">
-                Supprimer définitivement
+              <AlertDialogAction 
+                onClick={() => handleAction(onDeleteAccount, 'delete')} 
+                className="bg-red-600 hover:bg-red-700"
+                disabled={isLoading === 'delete'}
+              >
+                {isLoading === 'delete' ? 'Suppression...' : 'Supprimer définitivement'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

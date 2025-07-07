@@ -15,9 +15,9 @@ interface DashboardHeaderProps {
   storiesCount: number;
   downloadsCount: number;
   onUpgrade: () => void;
-  onUnsubscribe: () => void;
-  onSignOut: () => void;
-  onDeleteAccount: () => void;
+  onUnsubscribe: () => Promise<void>;
+  onSignOut: () => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
 }
 
 export function DashboardHeader({
