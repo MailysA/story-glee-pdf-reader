@@ -2,6 +2,7 @@ import { UsageLimitCard } from "@/components/UsageLimitCard";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { useState } from "react";
 
 interface SubscriptionStatusProps {
@@ -18,16 +19,34 @@ export function SubscriptionStatus({
   onUpgrade 
 }: SubscriptionStatusProps) {
   const { refreshSubscription } = useSubscription();
+  const { 
+    audioGenerationsCount,
+    storiesRemaining,
+    downloadsRemaining,
+    audioGenerationsRemaining,
+    refreshUsage
+  } = useUsageLimits();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
       await refreshSubscription(true);
+      await refreshUsage();
     } finally {
       setIsRefreshing(false);
     }
   };
+
+  // Calculer les limites basées sur le statut premium
+  const getActualLimits = () => {
+    if (!isPremium) {
+      return { stories: 10, downloads: 3, audioGenerations: 5 };
+    }
+    return { stories: 30, downloads: Infinity, audioGenerations: 30 };
+  };
+
+  const limits = getActualLimits();
 
   return (
     <div>
@@ -45,11 +64,11 @@ export function SubscriptionStatus({
       </div>
       <UsageLimitCard
         storiesUsed={storiesCount}
-        storiesLimit={isPremium ? 30 : 10}
+        storiesLimit={limits.stories}
         downloadsUsed={downloadsCount}
-        downloadsLimit={3}
-        audioGenerationsUsed={0}
-        audioGenerationsLimit={isPremium ? 30 : 5}
+        downloadsLimit={limits.downloads}
+        audioGenerationsUsed={audioGenerationsCount}
+        audioGenerationsLimit={limits.audioGenerations}
         onUpgrade={onUpgrade}
       />
     </div>
