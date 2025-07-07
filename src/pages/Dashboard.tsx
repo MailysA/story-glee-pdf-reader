@@ -5,17 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { User, Session } from "@supabase/supabase-js";
-import { BookOpen, Sparkles, Heart, Star, LogOut, Plus, Library } from "lucide-react";
+import { BookOpen, Sparkles, Heart, Star, LogOut, Plus, Library, Settings } from "lucide-react";
 import { StoryCreationForm } from "@/components/StoryCreationForm";
 import { StoryLibrary } from "@/components/StoryLibrary";
 import { UsageLimitCard } from "@/components/UsageLimitCard";
+import { Paywall } from "@/components/Paywall";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState<"create" | "library">("create");
   const [loading, setLoading] = useState(true);
+  const [showPaywall, setShowPaywall] = useState(false);
   const navigate = useNavigate();
   const { storiesCount, downloadsCount } = useUsageLimits();
 
@@ -110,15 +114,41 @@ export default function Dashboard() {
                 </Button>
               </div>
               
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSignOut}
-                className="flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                Déconnexion
-              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Settings className="w-4 h-4" />
+                    Paramètres
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-4">
+                    <div className="text-sm font-medium">Votre consommation</div>
+                    <UsageLimitCard
+                      storiesUsed={storiesCount}
+                      storiesLimit={10}
+                      downloadsUsed={downloadsCount}
+                      downloadsLimit={3}
+                      onUpgrade={() => setShowPaywall(true)}
+                    />
+                    <div className="border-t pt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Déconnexion
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
@@ -138,19 +168,7 @@ export default function Dashboard() {
                   Personnalisez une histoire magique pour votre enfant
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <UsageLimitCard
-                  storiesUsed={storiesCount}
-                  storiesLimit={10}
-                  downloadsUsed={downloadsCount}
-                  downloadsLimit={3}
-                  onUpgrade={() => {
-                    toast({
-                      title: "Premium bientôt disponible !",
-                      description: "Nous préparons l'abonnement premium avec des fonctionnalités avancées.",
-                    });
-                  }}
-                />
+              <CardContent>
                 <StoryCreationForm />
               </CardContent>
             </Card>
@@ -172,6 +190,26 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Paywall Dialog */}
+      <Dialog open={showPaywall} onOpenChange={setShowPaywall}>
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Choisir un plan</DialogTitle>
+          </DialogHeader>
+          <Paywall 
+            onPurchase={(planId) => {
+              console.log("Plan sélectionné:", planId);
+              // TODO: Intégrer avec Stripe
+              setShowPaywall(false);
+              toast({
+                title: "Plan sélectionné",
+                description: `Vous avez choisi le plan: ${planId}`,
+              });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
