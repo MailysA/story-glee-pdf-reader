@@ -3,9 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from "@/hooks/useSubscription";
 
-const STORY_LIMIT = 10;
-const DOWNLOAD_LIMIT = 3;
-const AUDIO_LIMIT = 5;
+const FREE_STORY_LIMIT = 10;
+const PREMIUM_STORY_LIMIT = 30;
+const FREE_DOWNLOAD_LIMIT = 3;
+const PREMIUM_DOWNLOAD_LIMIT = Infinity; // Illimité pour les premium
+const FREE_AUDIO_LIMIT = 5;
+const PREMIUM_AUDIO_LIMIT = 30;
 
 interface UsageLimits {
   storiesCount: number;
@@ -21,6 +24,9 @@ interface UsageLimits {
 }
 
 export const useUsageLimits = () => {
+  const { toast } = useToast();
+  const { isPremium } = useSubscription();
+  
   const [usage, setUsage] = useState<UsageLimits>({
     storiesCount: 0,
     downloadsCount: 0,
@@ -28,18 +34,21 @@ export const useUsageLimits = () => {
     canCreateStory: true,
     canDownload: true,
     canGenerateAudio: true,
-    storiesRemaining: STORY_LIMIT,
-    downloadsRemaining: DOWNLOAD_LIMIT,
-    audioGenerationsRemaining: AUDIO_LIMIT,
+    storiesRemaining: isPremium ? PREMIUM_STORY_LIMIT : FREE_STORY_LIMIT,
+    downloadsRemaining: isPremium ? PREMIUM_DOWNLOAD_LIMIT : FREE_DOWNLOAD_LIMIT,
+    audioGenerationsRemaining: isPremium ? PREMIUM_AUDIO_LIMIT : FREE_AUDIO_LIMIT,
     isLoading: true,
   });
-  const { toast } = useToast();
-  const { isPremium } = useSubscription();
 
   const fetchUsage = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Définir les limites basées sur le statut premium
+      const storyLimit = isPremium ? PREMIUM_STORY_LIMIT : FREE_STORY_LIMIT;
+      const downloadLimit = isPremium ? PREMIUM_DOWNLOAD_LIMIT : FREE_DOWNLOAD_LIMIT;
+      const audioLimit = isPremium ? PREMIUM_AUDIO_LIMIT : FREE_AUDIO_LIMIT;
 
       // Compter les histoires créées
       const { count: storiesCount } = await supabase
@@ -62,12 +71,12 @@ export const useUsageLimits = () => {
         storiesCount: actualStoriesCount,
         downloadsCount,
         audioGenerationsCount,
-        canCreateStory: actualStoriesCount < STORY_LIMIT,
-        canDownload: downloadsCount < DOWNLOAD_LIMIT,
-        canGenerateAudio: audioGenerationsCount < AUDIO_LIMIT,
-        storiesRemaining: Math.max(0, STORY_LIMIT - actualStoriesCount),
-        downloadsRemaining: Math.max(0, DOWNLOAD_LIMIT - downloadsCount),
-        audioGenerationsRemaining: Math.max(0, AUDIO_LIMIT - audioGenerationsCount),
+        canCreateStory: isPremium || actualStoriesCount < storyLimit,
+        canDownload: isPremium || downloadsCount < downloadLimit,
+        canGenerateAudio: isPremium || audioGenerationsCount < audioLimit,
+        storiesRemaining: isPremium ? Infinity : Math.max(0, storyLimit - actualStoriesCount),
+        downloadsRemaining: isPremium ? Infinity : Math.max(0, downloadLimit - downloadsCount),
+        audioGenerationsRemaining: isPremium ? Infinity : Math.max(0, audioLimit - audioGenerationsCount),
         isLoading: false,
       });
     } catch (error) {
@@ -164,9 +173,12 @@ export const useUsageLimits = () => {
 
   const checkStoryLimit = () => {
     if (!usage.canCreateStory) {
+      const limit = isPremium ? PREMIUM_STORY_LIMIT : FREE_STORY_LIMIT;
       toast({
         title: "Limite atteinte",
-        description: "Vous avez créé 10 histoires gratuites. Passez au premium pour continuer !",
+        description: isPremium 
+          ? `Vous avez créé ${limit} histoires ce mois-ci. Votre limite sera remise à zéro le mois prochain !`
+          : `Vous avez créé ${limit} histoires gratuites. Passez au premium pour continuer !`,
         variant: "destructive",
       });
       return false;
@@ -177,6 +189,11 @@ export const useUsageLimits = () => {
   useEffect(() => {
     fetchUsage();
   }, []);
+
+  // Rafraîchir quand le statut premium change
+  useEffect(() => {
+    fetchUsage();
+  }, [isPremium]);
 
   return {
     ...usage,

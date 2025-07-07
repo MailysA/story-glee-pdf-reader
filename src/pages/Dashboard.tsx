@@ -20,16 +20,17 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
   const navigate = useNavigate();
-  const { storiesCount, downloadsCount } = useUsageLimits();
+  const { storiesCount, downloadsCount, refreshUsage } = useUsageLimits();
   const { isPremium, subscriptionTier, openCustomerPortal, refreshSubscription } = useSubscription();
 
   useEffect(() => {
     // Check for successful payment from URL params
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {
-      // Attendre un peu puis rafraîchir l'abonnement
+      // Attendre un peu puis rafraîchir l'abonnement et les données d'usage
       setTimeout(async () => {
         await refreshSubscription();
+        await refreshUsage();
         
         // Animation de félicitations avec poussière d'étoiles
         toast({
@@ -57,8 +58,9 @@ export default function Dashboard() {
         if (!session) {
           navigate("/auth");
         } else {
-          // Rafraîchir l'abonnement lors de la connexion
+          // Rafraîchir l'abonnement et les données d'usage lors de la connexion
           await refreshSubscription();
+          await refreshUsage();
         }
       }
     );
@@ -72,13 +74,14 @@ export default function Dashboard() {
       if (!session) {
         navigate("/auth");
       } else {
-        // Rafraîchir l'abonnement lors du chargement initial
+        // Rafraîchir l'abonnement et les données d'usage lors du chargement initial
         await refreshSubscription();
+        await refreshUsage();
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, refreshSubscription]);
+  }, [navigate, refreshSubscription, refreshUsage]);
 
   const handleSignOut = useCallback(async () => {
     try {

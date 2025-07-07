@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -99,7 +99,15 @@ export function StoryCreationForm() {
   const [customDetails, setCustomDetails] = useState("");
   const [loading, setLoading] = useState(false);
   const { checkStoryLimit, refreshUsage } = useUsageLimits();
-  const { isPremium } = useSubscription();
+  const { isPremium, refreshSubscription, subscriptionTier } = useSubscription();
+
+  // Rafraîchir le statut d'abonnement au montage du composant
+  useEffect(() => {
+    const refreshStatus = async () => {
+      await refreshSubscription();
+    };
+    refreshStatus();
+  }, [refreshSubscription]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
