@@ -47,7 +47,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState([80]);
   const [isMuted, setIsMuted] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState(AVAILABLE_VOICES[0].id);
+  const [selectedVoice, setSelectedVoice] = useState("charlie");
   const [backgroundSound, setBackgroundSound] = useState("none");
   const [isLoading, setIsLoading] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
