@@ -23,8 +23,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
   const navigate = useNavigate();
-  const { storiesCount, downloadsCount, audioGenerationsCount, refreshUsage } = useUsageLimits();
-  const { isPremium, subscriptionTier, refreshSubscription, activatePremium, deactivatePremium } = useSubscription();
+  const { storiesCount, downloadsCount } = useUsageLimits();
+  const { isPremium, subscriptionTier } = useSubscription();
 
   useEffect(() => {
     // Set up auth state listener
@@ -69,22 +69,10 @@ export default function Dashboard() {
   };
 
   const handleUnsubscribe = async () => {
-    try {
-      // Désactiver le premium
-      await deactivatePremium();
-      await refreshUsage();
-      
-      toast({
-        title: "Désabonnement réussi",
-        description: "Votre abonnement a été annulé. Vous êtes maintenant sur le plan gratuit.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de traiter le désabonnement. Contactez le support.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Désabonnement",
+      description: "Votre demande de désabonnement a été enregistrée. Vous recevrez un email de confirmation.",
+    });
   };
 
   const handleDeleteAccount = async () => {
@@ -144,9 +132,7 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Sparkles className="w-8 h-8 text-primary" />
               <h1 className="text-2xl font-bold text-foreground">MagicTales</h1>
-              <Heart className="w-6 h-6 text-red-400" />
             </div>
             
             <div className="flex items-center gap-4">
@@ -222,8 +208,6 @@ export default function Dashboard() {
                       storiesLimit={10}
                       downloadsUsed={downloadsCount}
                       downloadsLimit={3}
-                      audioGenerationsUsed={audioGenerationsCount}
-                      audioGenerationsLimit={5}
                       onUpgrade={() => setShowPaywall(true)}
                     />
                     
@@ -351,25 +335,14 @@ export default function Dashboard() {
             <DialogTitle className="sr-only">Choisir un plan</DialogTitle>
           </DialogHeader>
           <Paywall 
-            onPurchase={async (planId) => {
+            onPurchase={(planId) => {
               console.log("Plan sélectionné:", planId);
+              // TODO: Intégrer avec Stripe
               setShowPaywall(false);
-              
-              if (planId === "monthly") {
-                // Activer le premium
-                await activatePremium();
-                await refreshUsage();
-                
-                toast({
-                  title: "Bienvenue Premium !",
-                  description: "Votre abonnement Premium a été activé avec succès.",
-                });
-              } else {
-                toast({
-                  title: "Plan gratuit sélectionné",
-                  description: "Vous continuez avec le plan gratuit.",
-                });
-              }
+              toast({
+                title: "Plan sélectionné",
+                description: `Vous avez choisi le plan: ${planId}`,
+              });
             }}
           />
         </DialogContent>
