@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
-import { Sparkles, Wand2, Heart, Star, Image } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Sparkles, Wand2, Heart, Star, Image, Crown } from "lucide-react";
 
 const themeCategories = [
   {
@@ -98,6 +99,7 @@ export function StoryCreationForm() {
   const [customDetails, setCustomDetails] = useState("");
   const [loading, setLoading] = useState(false);
   const { checkStoryLimit, refreshUsage } = useUsageLimits();
+  const { isPremium } = useSubscription();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -309,16 +311,40 @@ export function StoryCreationForm() {
 
       {/* Custom Details */}
       <div className="space-y-2">
-        <Label htmlFor="customDetails" className="text-base font-medium">
+        <Label htmlFor="customDetails" className="text-base font-medium flex items-center gap-2">
           Détails personnalisés (optionnel)
+          {!isPremium && (
+            <span className="text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white px-2 py-1 rounded-full font-bold flex items-center gap-1">
+              <Crown className="w-3 h-3" />
+              PREMIUM
+            </span>
+          )}
         </Label>
         <Textarea
           id="customDetails"
           value={customDetails}
-          onChange={(e) => setCustomDetails(e.target.value)}
-          placeholder="Ajoutez des détails spéciaux : animaux préférés, couleurs, passe-temps..."
-          className="min-h-[100px] resize-none"
+          onChange={(e) => isPremium ? setCustomDetails(e.target.value) : null}
+          placeholder={isPremium ? "Ajoutez des détails spéciaux : animaux préférés, couleurs, passe-temps..." : "Fonctionnalité réservée aux abonnés Premium"}
+          className={`min-h-[100px] resize-none ${!isPremium ? "opacity-50 cursor-not-allowed bg-gray-50" : ""}`}
+          disabled={!isPremium}
         />
+        {!isPremium && (
+          <div className="text-xs text-muted-foreground">
+            <span>Personnalisez vos histoires avec des détails uniques. </span>
+            <button
+              type="button"
+              onClick={() => {
+                toast({
+                  title: "Fonctionnalité Premium",
+                  description: "Passez à un abonnement Premium pour débloquer cette fonctionnalité.",
+                });
+              }}
+              className="text-primary hover:underline font-medium"
+            >
+              Passer à Premium
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Submit Button */}

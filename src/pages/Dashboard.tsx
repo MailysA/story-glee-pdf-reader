@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { User, Session } from "@supabase/supabase-js";
-import { BookOpen, Sparkles, Heart, Star, LogOut, Plus, Library, Settings } from "lucide-react";
+import { BookOpen, Sparkles, Heart, Star, LogOut, Plus, Library, Settings, Crown } from "lucide-react";
 import { StoryCreationForm } from "@/components/StoryCreationForm";
 import { StoryLibrary } from "@/components/StoryLibrary";
 import { UsageLimitCard } from "@/components/UsageLimitCard";
 import { Paywall } from "@/components/Paywall";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
+import { useSubscription } from "@/hooks/useSubscription";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [showPaywall, setShowPaywall] = useState(false);
   const navigate = useNavigate();
   const { storiesCount, downloadsCount } = useUsageLimits();
+  const { isPremium, subscriptionTier } = useSubscription();
 
   useEffect(() => {
     // Set up auth state listener
@@ -127,6 +129,38 @@ export default function Dashboard() {
                 </PopoverTrigger>
                 <PopoverContent className="w-80">
                   <div className="space-y-4">
+                    {/* Premium Status */}
+                    <div className="border-b pb-4">
+                      <div className="text-sm font-medium mb-2">Abonnement</div>
+                      {user && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            {isPremium ? (
+                              <>
+                                <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
+                                  <Crown className="w-4 h-4 text-white" />
+                                </div>
+                                <div>
+                                  <div className="text-sm font-medium">Plan {subscriptionTier}</div>
+                                  <div className="text-xs text-muted-foreground">{user.email}</div>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                  <Crown className="w-4 h-4 text-gray-500" />
+                                </div>
+                                <div>
+                                  <div className="text-sm font-medium text-gray-500">Plan Gratuit</div>
+                                  <div className="text-xs text-muted-foreground">{user.email}</div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
                     <div className="text-sm font-medium">Votre consommation</div>
                     <UsageLimitCard
                       storiesUsed={storiesCount}
