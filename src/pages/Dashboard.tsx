@@ -24,7 +24,7 @@ export default function Dashboard() {
   const [showPaywall, setShowPaywall] = useState(false);
   const navigate = useNavigate();
   const { storiesCount, downloadsCount } = useUsageLimits();
-  const { isPremium, subscriptionTier } = useSubscription();
+  const { isPremium, subscriptionTier, activatePremium } = useSubscription();
 
   useEffect(() => {
     // Set up auth state listener
@@ -342,14 +342,34 @@ export default function Dashboard() {
             <DialogTitle className="sr-only">Choisir un plan</DialogTitle>
           </DialogHeader>
           <Paywall 
-            onPurchase={(planId) => {
+            onPurchase={async (planId) => {
               console.log("Plan sélectionné:", planId);
-              // TODO: Intégrer avec Stripe
-              setShowPaywall(false);
-              toast({
-                title: "Plan sélectionné",
-                description: `Vous avez choisi le plan: ${planId}`,
-              });
+              
+              if (planId === "monthly") {
+                // Activer immédiatement le premium
+                await activatePremium();
+                
+                // Fermer le paywall
+                setShowPaywall(false);
+                
+                // Animation de félicitations avec poussière d'étoiles
+                toast({
+                  title: "🎉 Bienvenue en Premium !",
+                  description: "Vos nouvelles fonctionnalités sont maintenant actives !",
+                });
+                
+                // Déclencher l'animation de poussière d'étoiles
+                const stardust = document.createElement('div');
+                stardust.className = 'stardust-celebration';
+                document.body.appendChild(stardust);
+                setTimeout(() => document.body.removeChild(stardust), 3000);
+              } else {
+                setShowPaywall(false);
+                toast({
+                  title: "Plan sélectionné",
+                  description: `Vous avez choisi le plan: ${planId}`,
+                });
+              }
             }}
           />
         </DialogContent>

@@ -202,6 +202,7 @@ All colors MUST be HSL.
 .mystical-background {
   position: relative;
   overflow: hidden;
+  background: hsl(240 15% 8%);
 }
 
 .mystical-background::before {
@@ -235,7 +236,7 @@ All colors MUST be HSL.
   pointer-events: none;
 }
 
-/* Twinkling stars */
+/* Twinkling stars - Multiple stars scattered across the screen */
 .mystical-stars {
   position: absolute;
   width: 100%;
@@ -252,6 +253,19 @@ All colors MUST be HSL.
   background: hsl(45 90% 80%);
   border-radius: 50%;
   animation: twinkle 3s ease-in-out infinite;
+  box-shadow: 
+    10px 20px 0 hsl(200 80% 70%),
+    50px 80px 0 hsl(45 90% 80%),
+    150px 30px 0 hsl(280 60% 70%),
+    200px 120px 0 hsl(45 90% 80%),
+    300px 60px 0 hsl(200 80% 70%),
+    400px 150px 0 hsl(280 60% 70%),
+    80px 160px 0 hsl(45 90% 80%),
+    250px 200px 0 hsl(200 80% 70%),
+    350px 40px 0 hsl(280 60% 70%),
+    120px 50px 0 hsl(45 90% 80%),
+    180px 180px 0 hsl(200 80% 70%),
+    320px 110px 0 hsl(280 60% 70%);
 }
 
 .mystical-stars::before {
@@ -265,6 +279,17 @@ All colors MUST be HSL.
   right: 20%;
   animation: twinkle-delayed 4s ease-in-out infinite;
   background: hsl(200 80% 70%);
+  box-shadow: 
+    -60px -40px 0 hsl(45 90% 80%),
+    -120px 30px 0 hsl(280 60% 70%),
+    -200px -80px 0 hsl(200 80% 70%),
+    -300px 20px 0 hsl(45 90% 80%),
+    -150px 100px 0 hsl(280 60% 70%),
+    -250px -20px 0 hsl(200 80% 70%),
+    -350px 80px 0 hsl(45 90% 80%),
+    -100px -120px 0 hsl(280 60% 70%),
+    -280px 140px 0 hsl(200 80% 70%),
+    -380px -60px 0 hsl(45 90% 80%);
 }
 
 /* Additional mystical elements */
@@ -296,4 +321,91 @@ All colors MUST be HSL.
   left: 60%;
   animation-delay: 4s;
   background: radial-gradient(circle, hsl(45 90% 70%) 0%, transparent 70%);
+}
+
+/* Stardust celebration animation */
+@keyframes stardust-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(-100vh) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(360deg);
+  }
+}
+
+@keyframes stardust-sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.stardust-celebration {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.stardust-celebration::before,
+.stardust-celebration::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: hsl(45 90% 80%);
+  border-radius: 50%;
+  animation: stardust-fall 3s linear;
+  box-shadow: 
+    /* Première vague de poussière d'étoiles */
+    0 0 6px hsl(45 90% 80%),
+    20px 0 0 hsl(280 60% 70%),
+    40px 0 0 hsl(200 80% 70%),
+    60px 0 0 hsl(45 90% 80%),
+    80px 0 0 hsl(280 60% 70%),
+    100px 0 0 hsl(200 80% 70%),
+    120px 0 0 hsl(45 90% 80%),
+    140px 0 0 hsl(280 60% 70%),
+    160px 0 0 hsl(200 80% 70%),
+    180px 0 0 hsl(45 90% 80%),
+    200px 0 0 hsl(280 60% 70%),
+    220px 0 0 hsl(200 80% 70%),
+    240px 0 0 hsl(45 90% 80%),
+    260px 0 0 hsl(280 60% 70%),
+    280px 0 0 hsl(200 80% 70%),
+    300px 0 0 hsl(45 90% 80%);
+}
+
+.stardust-celebration::before {
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.stardust-celebration::after {
+  left: 50%;
+  animation-delay: 0.5s;
+  box-shadow: 
+    /* Deuxième vague décalée */
+    0 0 6px hsl(200 80% 70%),
+    30px 0 0 hsl(45 90% 80%),
+    60px 0 0 hsl(280 60% 70%),
+    90px 0 0 hsl(200 80% 70%),
+    120px 0 0 hsl(45 90% 80%),
+    150px 0 0 hsl(280 60% 70%),
+    180px 0 0 hsl(200 80% 70%),
+    210px 0 0 hsl(45 90% 80%),
+    240px 0 0 hsl(280 60% 70%),
+    270px 0 0 hsl(200 80% 70%),
+    300px 0 0 hsl(45 90% 80%),
+    330px 0 0 hsl(280 60% 70%),
+    360px 0 0 hsl(200 80% 70%);
 }
