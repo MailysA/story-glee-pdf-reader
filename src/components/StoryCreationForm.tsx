@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { Sparkles, Wand2, Heart, Star, Image } from "lucide-react";
 
 const themes = [
@@ -26,6 +27,7 @@ export function StoryCreationForm() {
   const [selectedTheme, setSelectedTheme] = useState("");
   const [customDetails, setCustomDetails] = useState("");
   const [loading, setLoading] = useState(false);
+  const { checkStoryLimit, refreshUsage } = useUsageLimits();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +38,11 @@ export function StoryCreationForm() {
         description: "Veuillez remplir tous les champs obligatoires.",
         variant: "destructive",
       });
+      return;
+    }
+
+    // Vérifier les limites avant de créer
+    if (!checkStoryLimit()) {
       return;
     }
 
@@ -115,6 +122,9 @@ export function StoryCreationForm() {
       setChildAge("");
       setSelectedTheme("");
       setCustomDetails("");
+
+      // Refresh usage data
+      await refreshUsage();
 
     } catch (error: any) {
       console.error("Erreur complète:", error);

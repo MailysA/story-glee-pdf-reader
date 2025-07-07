@@ -8,6 +8,8 @@ import { toast } from "@/hooks/use-toast";
 import { BookOpen, Download, Play, Pause, Trash2, Calendar, User, Heart, Filter } from "lucide-react";
 import { StoryReader } from "./StoryReader";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useUsageLimits } from "@/hooks/useUsageLimits";
+import { UsageLimitCard } from "./UsageLimitCard";
 
 interface Story {
   id: string;
@@ -29,6 +31,7 @@ export function StoryLibrary() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
+  const { incrementDownloads, storiesCount, downloadsCount } = useUsageLimits();
 
   // Récupérer la liste unique des enfants
   const uniqueChildren = Array.from(new Set(stories.map(story => story.child_name)));
@@ -90,7 +93,11 @@ export function StoryLibrary() {
     }
   };
 
-  const downloadStory = (story: Story) => {
+  const downloadStory = async (story: Story) => {
+    // Vérifier et incrémenter les téléchargements
+    const canDownload = await incrementDownloads();
+    if (!canDownload) return;
+
     const content = `${story.title}\n\n${story.story_content}`;
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -150,6 +157,20 @@ export function StoryLibrary() {
 
   return (
     <div className="space-y-6">
+      {/* Usage Limit Card */}
+      <UsageLimitCard
+        storiesUsed={storiesCount}
+        storiesLimit={10}
+        downloadsUsed={downloadsCount}
+        downloadsLimit={3}
+        onUpgrade={() => {
+          toast({
+            title: "Premium bientôt disponible !",
+            description: "Nous préparons l'abonnement premium avec des fonctionnalités avancées.",
+          });
+        }}
+      />
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
         <div className="flex items-center gap-2">

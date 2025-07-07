@@ -8,6 +8,8 @@ import { User, Session } from "@supabase/supabase-js";
 import { BookOpen, Sparkles, Heart, Star, LogOut, Plus, Library } from "lucide-react";
 import { StoryCreationForm } from "@/components/StoryCreationForm";
 import { StoryLibrary } from "@/components/StoryLibrary";
+import { UsageLimitCard } from "@/components/UsageLimitCard";
+import { useUsageLimits } from "@/hooks/useUsageLimits";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -15,6 +17,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"create" | "library">("create");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { storiesCount, downloadsCount } = useUsageLimits();
 
   useEffect(() => {
     // Set up auth state listener
@@ -135,7 +138,19 @@ export default function Dashboard() {
                   Personnalisez une histoire magique pour votre enfant
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
+                <UsageLimitCard
+                  storiesUsed={storiesCount}
+                  storiesLimit={10}
+                  downloadsUsed={downloadsCount}
+                  downloadsLimit={3}
+                  onUpgrade={() => {
+                    toast({
+                      title: "Premium bientôt disponible !",
+                      description: "Nous préparons l'abonnement premium avec des fonctionnalités avancées.",
+                    });
+                  }}
+                />
                 <StoryCreationForm />
               </CardContent>
             </Card>
