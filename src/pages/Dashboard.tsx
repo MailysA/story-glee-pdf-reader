@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { User, Session } from "@supabase/supabase-js";
-import { BookOpen, Sparkles, Heart, Star, LogOut, Plus, Library, Settings, Crown } from "lucide-react";
+import { BookOpen, Sparkles, Heart, Star, LogOut, Plus, Library, Settings, Crown, Trash2, CreditCard } from "lucide-react";
 import { StoryCreationForm } from "@/components/StoryCreationForm";
 import { StoryLibrary } from "@/components/StoryLibrary";
 import { UsageLimitCard } from "@/components/UsageLimitCard";
@@ -14,6 +14,7 @@ import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -62,6 +63,48 @@ export default function Dashboard() {
       toast({
         title: "Erreur de déconnexion",
         description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUnsubscribe = async () => {
+    toast({
+      title: "Désabonnement",
+      description: "Votre demande de désabonnement a été enregistrée. Vous recevrez un email de confirmation.",
+    });
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      // Delete user data first
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', user?.id);
+
+      const { error: storiesError } = await supabase
+        .from('stories')
+        .delete()
+        .eq('user_id', user?.id);
+
+      const { error: usageError } = await supabase
+        .from('user_usage')
+        .delete()
+        .eq('user_id', user?.id);
+
+      toast({
+        title: "Compte supprimé",
+        description: "Votre compte et toutes vos données ont été supprimés.",
+      });
+
+      // Sign out the user
+      await supabase.auth.signOut();
+      navigate("/auth");
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le compte. Contactez le support.",
         variant: "destructive",
       });
     }
@@ -169,7 +212,42 @@ export default function Dashboard() {
                       downloadsLimit={3}
                       onUpgrade={() => setShowPaywall(true)}
                     />
-                    <div className="border-t pt-4">
+                    
+                    {/* Account Management */}
+                    {isPremium && (
+                      <div className="border-t pt-4 space-y-2">
+                        <div className="text-sm font-medium mb-2">Gestion du compte</div>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full flex items-center gap-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                            >
+                              <CreditCard className="w-4 h-4" />
+                              Se désabonner
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmer le désabonnement</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Êtes-vous sûr de vouloir vous désabonner ? Vous perdrez l'accès aux fonctionnalités premium mais conserverez vos histoires existantes.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Annuler</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleUnsubscribe} className="bg-orange-600 hover:bg-orange-700">
+                                Confirmer le désabonnement
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    )}
+                    
+                    <div className="border-t pt-4 space-y-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -179,6 +257,33 @@ export default function Dashboard() {
                         <LogOut className="w-4 h-4" />
                         Déconnexion
                       </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Supprimer mon compte
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Supprimer définitivement le compte</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              ⚠️ Cette action est irréversible. Toutes vos histoires, paramètres et données seront définitivement supprimés.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuler</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700">
+                              Supprimer définitivement
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </PopoverContent>

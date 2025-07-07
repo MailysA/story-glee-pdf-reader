@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Crown, Sparkles, Download, BookOpen } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface UsageLimitCardProps {
   storiesUsed: number;
@@ -20,6 +21,7 @@ export const UsageLimitCard = ({
 }: UsageLimitCardProps) => {
   const storiesPercentage = (storiesUsed / storiesLimit) * 100;
   const downloadsPercentage = (downloadsUsed / downloadsLimit) * 100;
+  const { isPremium } = useSubscription();
 
   return (
     <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
@@ -73,7 +75,7 @@ export const UsageLimitCard = ({
         </div>
 
         {/* Bouton Premium */}
-        {(storiesUsed >= storiesLimit || downloadsUsed >= downloadsLimit) && (
+        {!isPremium && (storiesUsed >= storiesLimit || downloadsUsed >= downloadsLimit) && (
           <div className="pt-2 border-t">
             <Button
               onClick={onUpgrade}
