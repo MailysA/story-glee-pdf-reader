@@ -158,6 +158,7 @@ export type Database = {
       }
       user_usage: {
         Row: {
+          audio_generations_count: number
           created_at: string
           downloads_count: number
           id: string
@@ -165,6 +166,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          audio_generations_count?: number
           created_at?: string
           downloads_count?: number
           id?: string
@@ -172,6 +174,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          audio_generations_count?: number
           created_at?: string
           downloads_count?: number
           id?: string

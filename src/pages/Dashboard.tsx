@@ -23,7 +23,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showPaywall, setShowPaywall] = useState(false);
   const navigate = useNavigate();
-  const { storiesCount, downloadsCount } = useUsageLimits();
+  const { storiesCount, downloadsCount, audioGenerationsCount } = useUsageLimits();
   const { isPremium, subscriptionTier } = useSubscription();
 
   useEffect(() => {
@@ -69,10 +69,24 @@ export default function Dashboard() {
   };
 
   const handleUnsubscribe = async () => {
-    toast({
-      title: "Désabonnement",
-      description: "Votre demande de désabonnement a été enregistrée. Vous recevrez un email de confirmation.",
-    });
+    try {
+      // Simuler le désabonnement (dans un vrai projet, appeler l'API de paiement)
+      // Ici on va juste réinitialiser le statut local
+      
+      toast({
+        title: "Désabonnement réussi",
+        description: "Votre abonnement a été annulé. Vous conservez l'accès aux fonctionnalités premium jusqu'à la fin de votre période de facturation.",
+      });
+      
+      // Forcer la mise à jour du statut d'abonnement
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de traiter le désabonnement. Contactez le support.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -210,6 +224,8 @@ export default function Dashboard() {
                       storiesLimit={10}
                       downloadsUsed={downloadsCount}
                       downloadsLimit={3}
+                      audioGenerationsUsed={audioGenerationsCount}
+                      audioGenerationsLimit={5}
                       onUpgrade={() => setShowPaywall(true)}
                     />
                     

@@ -10,10 +10,10 @@ interface SubscriptionStatus {
 
 export const useSubscription = () => {
   const [subscription, setSubscription] = useState<SubscriptionStatus>({
-    isPremium: true, // Par défaut premium pour le développement
-    subscriptionTier: 'Premium',
+    isPremium: false, // Commencer en mode gratuit
+    subscriptionTier: null,
     subscriptionEnd: null,
-    loading: false
+    loading: true
   });
 
   const checkSubscription = async () => {
@@ -21,23 +21,28 @@ export const useSubscription = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
-        setSubscription(prev => ({ ...prev, loading: false }));
+        setSubscription({
+          isPremium: false,
+          subscriptionTier: null,
+          subscriptionEnd: null,
+          loading: false
+        });
         return;
       }
 
-      // Pour l'instant, considérer tous les utilisateurs comme premium
-      // Dans un vrai projet, vous ajouteriez une vraie logique d'abonnement
+      // Vérifier si l'utilisateur a un profil premium dans la base de données
+      // Pour l'instant, mode gratuit par défaut
       setSubscription({
-        isPremium: true,
-        subscriptionTier: 'Premium',
+        isPremium: false,
+        subscriptionTier: null,
         subscriptionEnd: null,
         loading: false
       });
     } catch (error) {
       console.error('Erreur lors de la vérification de l\'abonnement:', error);
       setSubscription({
-        isPremium: true,
-        subscriptionTier: 'Premium',
+        isPremium: false,
+        subscriptionTier: null,
         subscriptionEnd: null,
         loading: false
       });

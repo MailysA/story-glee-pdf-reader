@@ -8,6 +8,7 @@ import { Play, Pause, Volume2, VolumeOff, SkipBack, SkipForward, Headphones, Ale
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { cn } from "@/lib/utils";
 
 interface AudioPlayerProps {
@@ -54,11 +55,22 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [audioError, setAudioError] = useState<string | null>(null);
   const { isPremium, subscriptionTier, loading: subscriptionLoading } = useSubscription();
+  const { incrementAudioGenerations, canGenerateAudio } = useUsageLimits();
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const backgroundAudioRef = useRef<HTMLAudioElement>(null);
 
   const generateAudio = async (text: string, voice: string) => {
+    // Vérifier les limites avant de générer
+    if (!isPremium && !canGenerateAudio) {
+      toast({
+        title: "Limite atteinte",
+        description: "Vous avez atteint la limite de générations audio gratuites (5). Passez au premium pour plus !",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     setAudioError(null);
     
@@ -88,6 +100,11 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
         if (audioRef.current) {
           audioRef.current.src = audioUrl;
           audioRef.current.load();
+        }
+        
+        // Incrémenter le compteur de générations audio uniquement en cas de succès
+        if (!isPremium) {
+          await incrementAudioGenerations();
         }
         
         console.log("Audio généré avec succès");

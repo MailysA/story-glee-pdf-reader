@@ -31,7 +31,7 @@ export function StoryLibrary() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
-  const { incrementDownloads, storiesCount, downloadsCount } = useUsageLimits();
+  const { storiesCount, downloadsCount, audioGenerationsCount, incrementDownloads } = useUsageLimits();
 
   // Récupérer la liste unique des enfants
   const uniqueChildren = Array.from(new Set(stories.map(story => story.child_name)));
@@ -163,6 +163,8 @@ export function StoryLibrary() {
         storiesLimit={10}
         downloadsUsed={downloadsCount}
         downloadsLimit={3}
+        audioGenerationsUsed={audioGenerationsCount}
+        audioGenerationsLimit={5}
         onUpgrade={() => {
           toast({
             title: "Premium bientôt disponible !",
