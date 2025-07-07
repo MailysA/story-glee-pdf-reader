@@ -198,10 +198,9 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
       setIsFlipping(false);
     }, 300);
 
-    // Arrêter l'animation de sable après un délai
     setTimeout(() => {
       setShowSandAnimation(false);
-    }, 2000);
+    }, 1500);
   };
 
   if (pages.length === 0) {
@@ -229,6 +228,7 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
           {/* Sandman Animation Overlay */}
           <SandmanAnimation 
             isActive={showSandAnimation || isFlipping}
+            direction={isFlipping ? (currentPage > 0 ? 'right' : 'left') : 'none'}
             className="absolute inset-0 z-10 pointer-events-none"
           />
           

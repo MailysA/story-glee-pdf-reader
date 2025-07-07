@@ -14,10 +14,11 @@ interface SandParticle {
 
 interface SandmanAnimationProps {
   isActive?: boolean;
+  direction?: 'left' | 'right' | 'none';
   className?: string;
 }
 
-export const SandmanAnimation = ({ isActive = false, className }: SandmanAnimationProps) => {
+export const SandmanAnimation = ({ isActive = false, direction = 'none', className }: SandmanAnimationProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const particlesRef = useRef<SandParticle[]>([]);
@@ -41,21 +42,43 @@ export const SandmanAnimation = ({ isActive = false, className }: SandmanAnimati
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Initialize particles
+    // Create directional dust burst
+    const createDirectionalDust = () => {
+      if (direction === 'none') return;
+      
+      const particleCount = 300;
+      const startX = direction === 'right' ? 0 : canvas.width;
+      const directionMultiplier = direction === 'right' ? 1 : -1;
+      
+      for (let i = 0; i < particleCount; i++) {
+        particlesRef.current.push({
+          x: startX + (Math.random() * 100 * directionMultiplier),
+          y: Math.random() * canvas.height,
+          vx: (Math.random() * 8 + 4) * directionMultiplier,
+          vy: (Math.random() - 0.5) * 3,
+          size: Math.random() * 1.5 + 0.3, // Plus petites particules
+          opacity: Math.random() * 0.9 + 0.1,
+          life: 0,
+          maxLife: Math.random() * 120 + 60
+        });
+      }
+    };
+
+    // Initialize base particles
     const initParticles = () => {
       particlesRef.current = [];
-      const particleCount = 150;
+      const particleCount = 80;
       
       for (let i = 0; i < particleCount; i++) {
         particlesRef.current.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 2,
-          vy: (Math.random() - 0.5) * 2,
-          size: Math.random() * 3 + 1,
-          opacity: Math.random() * 0.8 + 0.2,
+          vx: (Math.random() - 0.5) * 1,
+          vy: (Math.random() - 0.5) * 1,
+          size: Math.random() * 1.2 + 0.2,
+          opacity: Math.random() * 0.3 + 0.1,
           life: 0,
-          maxLife: Math.random() * 200 + 100
+          maxLife: Math.random() * 300 + 200
         });
       }
     };
@@ -139,11 +162,9 @@ export const SandmanAnimation = ({ isActive = false, className }: SandmanAnimati
         return particle.life < particle.maxLife;
       });
       
-      // Add new particles occasionally when active
-      if (isActive && Math.random() < 0.3) {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height * 0.3;
-        createSandBurst(x, y);
+      // Create directional dust when active
+      if (isActive && direction !== 'none') {
+        createDirectionalDust();
       }
       
       // Keep some base particles
