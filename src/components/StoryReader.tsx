@@ -119,6 +119,9 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
           page_number: pageId,
           page_content_hash: contentHash,
           illustration_url: data.imageUrl
+        }, { 
+          onConflict: 'story_id,page_number',
+          ignoreDuplicates: false 
         });
 
       if (saveError) {
