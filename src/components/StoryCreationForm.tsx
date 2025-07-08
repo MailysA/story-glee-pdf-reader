@@ -11,6 +11,16 @@ import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Sparkles, Wand2, Heart, Star, Image, Crown } from "lucide-react";
 
+const narrativeTones = [
+  { value: "doux", label: "🌸 Doux", description: "Histoires tendres et rassurantes" },
+  { value: "aventure", label: "⚔️ Aventure", description: "Récits palpitants et pleins d'action" },
+  { value: "mysterieux", label: "🔍 Mystérieux", description: "Énigmes et découvertes intrigantes" },
+  { value: "drole", label: "😄 Drôle", description: "Histoires pleines d'humour et de rires" },
+  { value: "educatif", label: "📚 Éducatif", description: "Apprentissage ludique et instructif" },
+  { value: "poetique", label: "🌙 Poétique", description: "Langage imagé et rêveur" },
+  { value: "heroique", label: "🦸‍♂️ Héroïque", description: "Courage et bravoure" },
+];
+
 const themeCategories = [
   {
     name: "Contes & Légendes",
@@ -96,6 +106,7 @@ export function StoryCreationForm() {
   const [childName, setChildName] = useState("");
   const [childAge, setChildAge] = useState("");
   const [selectedTheme, setSelectedTheme] = useState("");
+  const [narrativeTone, setNarrativeTone] = useState("");
   const [customDetails, setCustomDetails] = useState("");
   const [loading, setLoading] = useState(false);
   const { checkStoryLimit, refreshUsage } = useUsageLimits();
@@ -139,6 +150,7 @@ export function StoryCreationForm() {
           childName,
           childAge: parseInt(childAge),
           theme: selectedTheme,
+          narrativeTone,
           customDetails
         }
       });
@@ -201,6 +213,7 @@ export function StoryCreationForm() {
       setChildName("");
       setChildAge("");
       setSelectedTheme("");
+      setNarrativeTone("");
       setCustomDetails("");
 
       // Refresh usage data
@@ -315,6 +328,37 @@ export function StoryCreationForm() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Narrative Tone Selection */}
+      <div className="space-y-4">
+        <Label className="text-base font-medium">Ton narratif (optionnel)</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {narrativeTones.map((tone) => (
+            <Card
+              key={tone.value}
+              className={`cursor-pointer transition-all hover:shadow-md ${
+                narrativeTone === tone.value
+                  ? "ring-2 ring-primary bg-primary/5"
+                  : "hover:bg-muted/30"
+              }`}
+              onClick={() => setNarrativeTone(narrativeTone === tone.value ? "" : tone.value)}
+            >
+              <CardContent className="p-4 text-center">
+                <div className="text-lg mb-2">{tone.label.split(" ")[0]}</div>
+                <div className="font-medium text-sm mb-1">
+                  {tone.label.split(" ").slice(1).join(" ")}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {tone.description}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Sélectionnez un ton pour personnaliser le style de narration de l'histoire.
+        </p>
       </div>
 
       {/* Custom Details */}
