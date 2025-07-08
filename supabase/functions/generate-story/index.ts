@@ -61,11 +61,11 @@ serve(async (req) => {
       "sorciere": "une aventure magique avec des sorcières bienveillantes",
       "fantome": "une histoire mystérieuse avec des fantômes gentils",
       "aventure": "une grande aventure pleine de découvertes",
-      "aventure-jungle": "une expédition tropicale passionnante",
+      "aventure-jungle": "une expédition tropicale passionnante dans la jungle",
       "pirate": "une aventure de pirates à la recherche de trésors",
       "alien": "une rencontre amicale avec des extraterrestres",
       "foret": "une aventure dans une forêt magique",
-      "foret-enchantee": "une histoire dans une forêt peuplée de fées",
+      "foret-enchantee": "une histoire dans une forêt enchantée peuplée de fées et de créatures magiques",
       "ocean": "une aventure sous-marine mystérieuse",
       "banquise": "une aventure polaire avec des animaux arctiques",
       "environnement": "une histoire sur la protection de la nature",
@@ -81,11 +81,11 @@ serve(async (req) => {
       "logique": "une histoire d'énigmes et de réflexion",
       "emotions": "une histoire sur les sentiments",
       "respect": "une histoire sur le vivre ensemble",
-      "bonnes-manieres": "une histoire sur la politesse",
+      "bonnes-manieres": "une histoire sur la politesse et les bonnes manières",
       "recyclage": "une aventure écologique",
       "cirque": "une histoire de spectacle et d'acrobaties",
       "bonbons": "une aventure sucrée magique",
-      "maison-magique": "une histoire dans une maison pleine de mystères"
+      "maison-magique": "une histoire dans une maison pleine de mystères et de surprises"
     };
 
     const tonePrompts = {
