@@ -2,18 +2,40 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  "https://eczbwgkebhckysgfrqfdg.supabase.co",
+  "http://localhost:5173",
+  "http://localhost:3000"
+];
+
+const getCorsHeaders = (origin: string | null) => {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Credentials": "true"
+  };
 };
 
-// Helper logging function for enhanced debugging
+// Secure logging function - no sensitive data
 const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  const sanitizedDetails = details ? {
+    ...details,
+    email: details.email ? '[REDACTED]' : undefined,
+    userId: details.userId ? '[REDACTED]' : undefined,
+    customerId: details.customerId ? '[REDACTED]' : undefined,
+    subscriptionId: details.subscriptionId ? '[REDACTED]' : undefined,
+  } : undefined;
+  
+  const detailsStr = sanitizedDetails ? ` - ${JSON.stringify(sanitizedDetails)}` : '';
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
 serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -33,16 +55,21 @@ serve(async (req) => {
     logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new Error("Invalid authorization header");
+    }
     logStep("Authorization header found");
 
     const token = authHeader.replace("Bearer ", "");
+    if (!token || token.length < 10) {
+      throw new Error("Invalid token format");
+    }
     logStep("Authenticating user with token");
     
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    if (userError) throw new Error("Authentication failed");
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email || !user.id) throw new Error("User authentication required");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
@@ -119,10 +146,20 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in check-subscription", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    logStep("ERROR in check-subscription", { message: "Error occurred" });
+    
+    // Sanitized error messages
+    const publicMessage = errorMessage.includes("authentication") 
+      ? "Authentication required"
+      : errorMessage.includes("STRIPE_SECRET_KEY")
+      ? "Service configuration error"
+      : "Unable to check subscription status";
+      
+    const statusCode = errorMessage.includes("authentication") ? 401 : 500;
+    
+    return new Response(JSON.stringify({ error: publicMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: statusCode,
     });
   }
 });
