@@ -34,9 +34,9 @@ export const useUsageLimits = () => {
     canCreateStory: true,
     canDownload: true,
     canGenerateAudio: true,
-    storiesRemaining: isPremium ? PREMIUM_STORY_LIMIT : FREE_STORY_LIMIT,
-    downloadsRemaining: isPremium ? PREMIUM_DOWNLOAD_LIMIT : FREE_DOWNLOAD_LIMIT,
-    audioGenerationsRemaining: isPremium ? PREMIUM_AUDIO_LIMIT : FREE_AUDIO_LIMIT,
+    storiesRemaining: FREE_STORY_LIMIT,
+    downloadsRemaining: FREE_DOWNLOAD_LIMIT,
+    audioGenerationsRemaining: FREE_AUDIO_LIMIT,
     isLoading: true,
   });
 
