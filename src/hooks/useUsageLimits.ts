@@ -188,12 +188,7 @@ export const useUsageLimits = () => {
 
   useEffect(() => {
     fetchUsage();
-  }, []);
-
-  // Rafraîchir quand le statut premium change
-  useEffect(() => {
-    fetchUsage();
-  }, [isPremium]);
+  }, [isPremium]); // Un seul useEffect qui dépend d'isPremium
 
   return {
     ...usage,

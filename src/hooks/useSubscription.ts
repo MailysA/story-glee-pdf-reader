@@ -30,52 +30,60 @@ export const useSubscription = () => {
         return;
       }
 
-      // Appeler la fonction edge pour vérifier l'abonnement Stripe
-      const { data, error } = await supabase.functions.invoke('check-subscription');
-      
-      if (error) {
-        console.error('Erreur lors de la vérification Stripe:', error);
-        if (showToast) {
-          const { toast } = await import("@/hooks/use-toast");
-          toast({
-            title: "Erreur de vérification",
-            description: "Impossible de vérifier votre abonnement. Veuillez réessayer.",
-            variant: "destructive",
+      // Essayer d'appeler la fonction edge pour vérifier l'abonnement Stripe
+      try {
+        const { data, error } = await supabase.functions.invoke('check-subscription');
+        
+        if (error) {
+          console.warn('Edge function check-subscription non disponible:', error.message);
+          // Fallback: utiliser les données locales de la base Supabase
+          const { data: subscriberData } = await supabase
+            .from('subscribers')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+          setSubscription({
+            isPremium: subscriberData?.subscribed || false,
+            subscriptionTier: subscriberData?.subscription_tier || null,
+            subscriptionEnd: subscriberData?.subscription_end || null,
+            loading: false
           });
+          return;
         }
+
         setSubscription({
-          isPremium: false,
-          subscriptionTier: null,
-          subscriptionEnd: null,
+          isPremium: data?.subscribed || false,
+          subscriptionTier: data?.subscription_tier || null,
+          subscriptionEnd: data?.subscription_end || null,
           loading: false
         });
-        return;
-      }
 
-      setSubscription({
-        isPremium: data?.subscribed || false,
-        subscriptionTier: data?.subscription_tier || null,
-        subscriptionEnd: data?.subscription_end || null,
-        loading: false
-      });
+        if (showToast && data?.subscribed) {
+          const { toast } = await import("@/hooks/use-toast");
+          toast({
+            title: "Abonnement vérifié",
+            description: `Votre plan ${data.subscription_tier} est actif.`,
+          });
+        }
+      } catch (edgeFunctionError) {
+        console.warn('Edge function non accessible, mode dégradé activé');
+        // Mode dégradé: utiliser seulement les données locales
+        const { data: subscriberData } = await supabase
+          .from('subscribers')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-      if (showToast && data?.subscribed) {
-        const { toast } = await import("@/hooks/use-toast");
-        toast({
-          title: "Abonnement vérifié",
-          description: `Votre plan ${data.subscription_tier} est actif.`,
+        setSubscription({
+          isPremium: subscriberData?.subscribed || false,
+          subscriptionTier: subscriberData?.subscription_tier || null,
+          subscriptionEnd: subscriberData?.subscription_end || null,
+          loading: false
         });
       }
     } catch (error) {
       console.error('Erreur lors de la vérification de l\'abonnement:', error);
-      if (showToast) {
-        const { toast } = await import("@/hooks/use-toast");
-        toast({
-          title: "Erreur réseau",
-          description: "Impossible de contacter nos serveurs. Vérifiez votre connexion.",
-          variant: "destructive",
-        });
-      }
       setSubscription({
         isPremium: false,
         subscriptionTier: null,
