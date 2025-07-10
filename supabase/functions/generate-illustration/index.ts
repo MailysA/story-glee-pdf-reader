@@ -13,16 +13,21 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Début génération illustration');
     const { theme, childName, storyTitle, pageContent } = await req.json();
+    console.log('Paramètres reçus:', { theme, childName, storyTitle, pageContent: pageContent?.substring(0, 100) });
 
     if (!theme && !pageContent) {
+      console.error('Erreur: Paramètres manquants');
       throw new Error('Thème ou contenu de page requis pour générer l\'illustration');
     }
 
     const openAIApiKey = Deno.env.get('OPEN_AI_API_KEY');
     if (!openAIApiKey) {
+      console.error('Erreur: Clé API OpenAI manquante');
       throw new Error('Clé API OpenAI non configurée');
     }
+    console.log('Clé API OpenAI présente');
 
     // Créer un prompt pour l'illustration selon le thème ou le contenu de la page
     let prompt;
@@ -46,6 +51,7 @@ serve(async (req) => {
 
     console.log('Génération d\'illustration avec prompt:', prompt);
 
+    console.log('Appel API OpenAI...');
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -61,12 +67,15 @@ serve(async (req) => {
       }),
     });
 
+    console.log('Réponse OpenAI status:', response.status);
     if (!response.ok) {
       const error = await response.json();
+      console.error('Erreur détaillée OpenAI:', error);
       throw new Error(`Erreur OpenAI Images: ${error.error?.message || 'Erreur inconnue'}`);
     }
 
     const data = await response.json();
+    console.log('Données reçues OpenAI:', { success: !!data.data?.[0]?.url });
     const imageUrl = data.data[0].url;
 
     return new Response(
