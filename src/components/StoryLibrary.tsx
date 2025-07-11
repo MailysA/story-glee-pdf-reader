@@ -48,15 +48,21 @@ export function StoryLibrary() {
 
   const fetchStories = async () => {
     try {
+      console.log('Début chargement des histoires...');
       const { data, error } = await supabase
         .from("stories")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur lors du chargement des histoires:', error);
+        throw error;
+      }
 
+      console.log('Histoires chargées:', data?.length || 0);
       setStories(data || []);
     } catch (error: any) {
+      console.error('Erreur fetchStories:', error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les histoires.",
