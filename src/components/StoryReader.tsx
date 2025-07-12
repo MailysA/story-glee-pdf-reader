@@ -66,58 +66,10 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
       } else {
         // Initialiser les pages sans illustrations
         setPages(storyPages);
-        // Générer uniquement l'illustration de couverture
-        generateCoverIllustration();
       }
     } catch (error) {
       console.error('Erreur chargement couverture:', error);
       setPages(storyPages);
-      generateCoverIllustration();
-    }
-  };
-
-  const generateCoverIllustration = async () => {
-    try {
-      setLoadingIllustrations(prev => ({ ...prev, [0]: true }));
-      
-      const { data, error } = await supabase.functions.invoke('generate-illustration', {
-        body: {
-          theme: story.title,
-          childName: "l'enfant",
-          storyTitle: story.title,
-          pageContent: `Couverture du livre: "${story.title}". Une belle illustration de couverture avec le titre visible.`
-        }
-      });
-
-      if (error) throw error;
-
-      // Sauvegarder l'illustration de couverture en base de données
-      const titleHash = createContentHash(story.title);
-      const { error: saveError } = await supabase
-        .from('story_page_illustrations')
-        .upsert({
-          story_id: story.id,
-          page_number: 0,
-          page_content_hash: titleHash,
-          illustration_url: data.imageUrl
-        }, { 
-          onConflict: 'story_id,page_number',
-          ignoreDuplicates: false 
-        });
-
-      if (saveError) {
-        console.error('Erreur sauvegarde couverture:', saveError);
-      }
-
-      setPages(prevPages => prevPages.map(page => 
-        page.id === 0 
-          ? { ...page, illustration: data.imageUrl }
-          : page
-      ));
-    } catch (error) {
-      console.error('Erreur génération couverture:', error);
-    } finally {
-      setLoadingIllustrations(prev => ({ ...prev, [0]: false }));
     }
   };
 
@@ -266,16 +218,7 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
                 {/* Illustration Side - Seulement pour la première page */}
                 <div className="flex items-center justify-center">
                   {currentPage === 0 ? (
-                    loadingIllustrations[0] ? (
-                      <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="animate-spin mb-2">
-                            <BookOpen className="w-8 h-8 text-primary mx-auto" />
-                          </div>
-                          <p className="text-sm text-muted-foreground">Génération de la couverture...</p>
-                        </div>
-                      </div>
-                    ) : pages[0]?.illustration ? (
+                    pages[0]?.illustration ? (
                       <img 
                         src={pages[0].illustration} 
                         alt={`Couverture de ${story.title}`}
