@@ -111,9 +111,10 @@ export function StoryCreationForm() {
   const [customDetails, setCustomDetails] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchTheme, setSearchTheme] = useState("");
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(themeCategories.map(cat => cat.name)));
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [toneSectionCollapsed, setToneSectionCollapsed] = useState(true);
   const { checkStoryLimit, refreshUsage } = useUsageLimits();
   const { isPremium, refreshSubscription, subscriptionTier } = useSubscription();
 
@@ -566,36 +567,49 @@ export function StoryCreationForm() {
 
         {/* Tous les tons narratifs */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <span className="text-lg">📖</span>
-            Tous les tons narratifs
-            <Badge variant="outline" className="text-xs">
-              {narrativeTones.length}
-            </Badge>
+          <div 
+            className="flex items-center justify-between cursor-pointer hover:text-primary transition-colors"
+            onClick={() => setToneSectionCollapsed(!toneSectionCollapsed)}
+          >
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <span className="text-lg">📖</span>
+              Tous les tons narratifs
+              <Badge variant="outline" className="text-xs">
+                {narrativeTones.length}
+              </Badge>
+            </div>
+            {toneSectionCollapsed ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {narrativeTones.map((tone) => (
-              <Card
-                key={tone.value}
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  narrativeTone === tone.value
-                    ? "ring-2 ring-primary bg-primary/5"
-                    : "hover:bg-muted/30"
-                }`}
-                onClick={() => setNarrativeTone(narrativeTone === tone.value ? "" : tone.value)}
-              >
-                <CardContent className="p-4 text-center">
-                  <div className="text-lg mb-2">{tone.label.split(" ")[0]}</div>
-                  <div className="font-medium text-sm mb-1">
-                    {tone.label.split(" ").slice(1).join(" ")}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {tone.description}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          
+          {!toneSectionCollapsed && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {narrativeTones.map((tone) => (
+                <Card
+                  key={tone.value}
+                  className={`cursor-pointer transition-all hover:shadow-md ${
+                    narrativeTone === tone.value
+                      ? "ring-2 ring-primary bg-primary/5"
+                      : "hover:bg-muted/30"
+                  }`}
+                  onClick={() => setNarrativeTone(narrativeTone === tone.value ? "" : tone.value)}
+                >
+                  <CardContent className="p-4 text-center">
+                    <div className="text-lg mb-2">{tone.label.split(" ")[0]}</div>
+                    <div className="font-medium text-sm mb-1">
+                      {tone.label.split(" ").slice(1).join(" ")}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {tone.description}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
         
         <p className="text-xs text-muted-foreground">
