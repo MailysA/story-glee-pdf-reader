@@ -112,6 +112,8 @@ export function StoryCreationForm() {
   const [loading, setLoading] = useState(false);
   const [searchTheme, setSearchTheme] = useState("");
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const { checkStoryLimit, refreshUsage } = useUsageLimits();
   const { isPremium, refreshSubscription, subscriptionTier } = useSubscription();
 
@@ -166,6 +168,39 @@ export function StoryCreationForm() {
     { value: "mysterieux", label: "🔍 Mystérieux" },
     { value: "heroique", label: "🦸‍♂️ Héroïque" }
   ];
+
+  // Vérification de l'authentification au chargement
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticated(!!user);
+        setAuthLoading(false);
+        
+        if (!user) {
+          toast({
+            title: "⚠️ Connexion requise",
+            description: "Vous devez être connecté pour créer une histoire. Veuillez vous connecter avant de continuer.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('Erreur vérification auth:', error);
+        setIsAuthenticated(false);
+        setAuthLoading(false);
+      }
+    };
+
+    checkAuth();
+
+    // Écouter les changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session?.user);
+      setAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Remove the refresh subscription on mount to prevent infinite loops
   // The subscription status is already managed by the useSubscription hook
@@ -280,6 +315,40 @@ export function StoryCreationForm() {
       setLoading(false);
     }
   };
+
+  // Affichage pendant le chargement de l'authentification
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <Sparkles className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Vérification de l'authentification...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Affichage si l'utilisateur n'est pas authentifié
+  if (!isAuthenticated) {
+    return (
+      <div className="text-center py-12 space-y-4">
+        <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center">
+          <Wand2 className="w-8 h-8 text-red-500" />
+        </div>
+        <h3 className="text-xl font-semibold text-foreground">Connexion requise</h3>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Vous devez être connecté pour créer des histoires magiques. 
+          Connectez-vous pour accéder à toutes les fonctionnalités !
+        </p>
+        <Button 
+          onClick={() => window.location.href = '/auth'}
+          className="bg-gradient-to-r from-primary to-primary-glow"
+        >
+          Se connecter
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
