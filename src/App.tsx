@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import EmailConfirmation from "./pages/EmailConfirmation";
 import NotFound from "./pages/NotFound";
 import Legal from "./pages/Legal";
 
@@ -23,6 +24,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/email-confirmation" element={<EmailConfirmation />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/legal" element={<Legal />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

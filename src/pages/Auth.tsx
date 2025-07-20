@@ -12,6 +12,7 @@ import { Sparkles, Heart, Star } from "lucide-react";
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -28,6 +29,26 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation de la confirmation du mot de passe
+    if (password !== confirmPassword) {
+      toast({
+        title: "Erreur",
+        description: "Les mots de passe ne correspondent pas.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Erreur",
+        description: "Le mot de passe doit contenir au moins 6 caractères.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -41,9 +62,12 @@ export default function Auth() {
 
       if (error) throw error;
 
+      // Rediriger vers la page de confirmation d'email
+      navigate(`/email-confirmation?email=${encodeURIComponent(email)}`);
+      
       toast({
         title: "Compte créé avec succès!",
-        description: "Vérifiez votre email pour confirmer votre compte.",
+        description: "Un email de confirmation vous a été envoyé.",
       });
     } catch (error: any) {
       toast({
@@ -163,6 +187,18 @@ export default function Auth() {
                       placeholder="Au moins 6 caractères"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      placeholder="Répétez votre mot de passe"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                       minLength={6}
                     />
