@@ -51,37 +51,31 @@ export default function Dashboard() {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (!session) {
           navigate("/auth");
-        } else {
-          // Rafraîchir l'abonnement et les données d'usage lors de la connexion
-          await refreshSubscription();
-          await refreshUsage();
         }
+        // Remove async calls from auth state change to prevent loops
       }
     );
 
     // Check initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
       
       if (!session) {
         navigate("/auth");
-      } else {
-        // Rafraîchir l'abonnement et les données d'usage lors du chargement initial
-        await refreshSubscription();
-        await refreshUsage();
       }
+      // Subscription and usage data will be loaded by their respective hooks
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, refreshSubscription, refreshUsage]);
+  }, [navigate]);
 
   const handleSignOut = useCallback(async () => {
     try {
