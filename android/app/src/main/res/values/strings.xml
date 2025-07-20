@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">story-glee-pdf-reader</string>
+    <string name="title_activity_main">story-glee-pdf-reader</string>
+    <string name="package_name">app.lovable.f6eb86e205fe40ae93b071bc4bdc9e2e</string>
+    <string name="custom_url_scheme">app.lovable.f6eb86e205fe40ae93b071bc4bdc9e2e</string>
+</resources>
