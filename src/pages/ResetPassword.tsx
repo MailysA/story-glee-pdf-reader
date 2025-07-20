@@ -18,18 +18,47 @@ export default function ResetPassword() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // Vérifier si nous avons un token d'accès (venant du lien email)
+    // Supabase envoie différents paramètres selon le type de lien
     const accessToken = searchParams.get('access_token');
     const refreshToken = searchParams.get('refresh_token');
+    const type = searchParams.get('type');
+    const tokenHash = searchParams.get('token_hash');
     
+    console.log('URL params:', { accessToken, refreshToken, type, tokenHash });
+    
+    // Si on a un access_token et refresh_token (nouveau format Supabase)
     if (accessToken && refreshToken) {
-      // Définir la session avec les tokens fournis
       supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
       });
-    } else {
-      // Rediriger vers la page d'auth si pas de tokens
+    }
+    // Si on a un token_hash et type=recovery (ancien format ou email confirmation)
+    else if (tokenHash && type === 'recovery') {
+      // Vérifier le token de récupération avec Supabase
+      supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: 'recovery',
+      }).then(({ error }) => {
+        if (error) {
+          console.error('Erreur vérification token:', error);
+          toast({
+            title: "Lien invalide",
+            description: "Le lien de réinitialisation est invalide ou a expiré.",
+            variant: "destructive",
+          });
+          navigate("/auth");
+        }
+      });
+    }
+    // Si aucun token valide n'est trouvé
+    else {
+      console.warn('Aucun token de réinitialisation trouvé');
+      toast({
+        title: "Lien manquant",
+        description: "Aucun token de réinitialisation trouvé. Retour à la connexion.",
+        variant: "destructive",
+      });
       navigate("/auth");
     }
   }, [searchParams, navigate]);

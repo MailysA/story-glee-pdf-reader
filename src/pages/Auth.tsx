@@ -66,7 +66,7 @@ export default function Auth() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`
+          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`
         }
       });
 
@@ -120,7 +120,7 @@ export default function Auth() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/reset-password`
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`
       });
 
       if (error) throw error;
