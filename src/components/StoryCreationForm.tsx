@@ -157,6 +157,16 @@ export function StoryCreationForm() {
     { value: "ocean", label: "🌊 Océan" }
   ];
 
+  // Tons narratifs populaires pour accès rapide
+  const popularTones = [
+    { value: "doux", label: "🌸 Doux" },
+    { value: "aventure", label: "⚔️ Aventure" },
+    { value: "drole", label: "😄 Drôle" },
+    { value: "educatif", label: "📚 Éducatif" },
+    { value: "mysterieux", label: "🔍 Mystérieux" },
+    { value: "heroique", label: "🦸‍♂️ Héroïque" }
+  ];
+
   // Remove the refresh subscription on mount to prevent infinite loops
   // The subscription status is already managed by the useSubscription hook
 
@@ -462,32 +472,74 @@ export function StoryCreationForm() {
 
       {/* Narrative Tone Selection */}
       <div className="space-y-4">
-        <Label className="text-base font-medium">Ton narratif (optionnel)</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {narrativeTones.map((tone) => (
-            <Card
-              key={tone.value}
-              className={`cursor-pointer transition-all hover:shadow-md ${
-                narrativeTone === tone.value
-                  ? "ring-2 ring-primary bg-primary/5"
-                  : "hover:bg-muted/30"
-              }`}
-              onClick={() => setNarrativeTone(narrativeTone === tone.value ? "" : tone.value)}
-            >
-              <CardContent className="p-4 text-center">
-                <div className="text-lg mb-2">{tone.label.split(" ")[0]}</div>
-                <div className="font-medium text-sm mb-1">
-                  {tone.label.split(" ").slice(1).join(" ")}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  {tone.description}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="flex items-center justify-between">
+          <Label className="text-base font-medium">Ton narratif (optionnel)</Label>
+          {narrativeTone && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Heart className="w-3 h-3" />
+              Ton sélectionné
+            </Badge>
+          )}
         </div>
+
+        {/* Tons populaires - Accès rapide */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <span className="text-lg">🎭</span>
+            Tons populaires
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {popularTones.map((tone) => (
+              <Button
+                key={tone.value}
+                type="button"
+                variant={narrativeTone === tone.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => setNarrativeTone(narrativeTone === tone.value ? "" : tone.value)}
+                className="h-8 text-xs"
+              >
+                {tone.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tous les tons narratifs */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <span className="text-lg">📖</span>
+            Tous les tons narratifs
+            <Badge variant="outline" className="text-xs">
+              {narrativeTones.length}
+            </Badge>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {narrativeTones.map((tone) => (
+              <Card
+                key={tone.value}
+                className={`cursor-pointer transition-all hover:shadow-md ${
+                  narrativeTone === tone.value
+                    ? "ring-2 ring-primary bg-primary/5"
+                    : "hover:bg-muted/30"
+                }`}
+                onClick={() => setNarrativeTone(narrativeTone === tone.value ? "" : tone.value)}
+              >
+                <CardContent className="p-4 text-center">
+                  <div className="text-lg mb-2">{tone.label.split(" ")[0]}</div>
+                  <div className="font-medium text-sm mb-1">
+                    {tone.label.split(" ").slice(1).join(" ")}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {tone.description}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+        
         <p className="text-xs text-muted-foreground">
-          Sélectionnez un ton pour personnaliser le style de narration de l'histoire.
+          💡 Les tons populaires permettent une sélection rapide, ou explorez tous les tons pour plus d'options.
         </p>
       </div>
 
