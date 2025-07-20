@@ -20,22 +20,34 @@ const Index = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen" style={{background: "var(--gradient-rainbow)"}}>
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen relative" style={{background: "var(--gradient-rainbow)"}}>
+      {/* Éléments magiques animés */}
+      <div className="magical-elements">
+        <div className="rainbow-element">🌈</div>
+        <div className="rainbow-element">⭐</div>
+        <div className="rainbow-element">🌙</div>
+        <div className="dinosaur-element">🦕</div>
+        <div className="dinosaur-element">🦖</div>
+        <div className="fairy-element">🧚‍♀️</div>
+        <div className="fairy-element">✨</div>
+        <div className="fairy-element">🦋</div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-12 relative z-10">
         {/* Hero Section */}
         <div className="text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <Sparkles className="w-12 h-12 text-white animate-pulse" />
-            <h1 className="text-6xl font-bold text-white">Histoires magiques</h1>
-            <Heart className="w-12 h-12 text-red-300 animate-bounce" />
+            <Sparkles className="w-12 h-12 text-primary animate-pulse" />
+            <h1 className="text-6xl font-bold text-foreground">Histoires magiques</h1>
+            <Heart className="w-12 h-12 text-destructive animate-bounce" />
           </div>
-          <p className="text-2xl text-white/90 mb-12 max-w-2xl mx-auto">
+          <p className="text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
             Créez des histoires personnalisées et magiques pour vos enfants avec l'intelligence artificielle
           </p>
           <Button
             size="lg"
             onClick={() => navigate("/dashboard")}
-            className="bg-white text-foreground hover:bg-white/90 px-12 py-6 text-2xl font-semibold shadow-2xl hover:shadow-3xl transition-all"
+            className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground hover:shadow-glow px-12 py-6 text-2xl font-semibold shadow-sweet transition-all duration-300 hover:scale-105"
           >
             <Wand2 className="w-8 h-8 mr-3" />
             Créer mon histoire

@@ -47,7 +47,7 @@ All colors MUST be HSL.
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-glow)));
     
     /* Mystical background animation */
-    --gradient-rainbow: radial-gradient(ellipse at center, hsl(240 15% 8%) 0%, hsl(240 20% 3%) 100%);
+    --gradient-rainbow: linear-gradient(135deg, hsl(210 100% 97%) 0%, hsl(220 100% 95%) 100%);
     
     /* Sweet shadows */
     --shadow-sweet: 0 4px 20px hsl(var(--primary) / 0.15);
@@ -408,4 +408,136 @@ All colors MUST be HSL.
     300px 0 0 hsl(45 90% 80%),
     330px 0 0 hsl(280 60% 70%),
     360px 0 0 hsl(200 80% 70%);
+}
+
+/* Animations magiques pour le background */
+@keyframes float-elements {
+  0%, 100% { 
+    transform: translateY(0px) translateX(0px) rotate(0deg);
+    opacity: 0.6;
+  }
+  25% { 
+    transform: translateY(-20px) translateX(10px) rotate(5deg);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translateY(-10px) translateX(-5px) rotate(-3deg);
+    opacity: 0.4;
+  }
+  75% { 
+    transform: translateY(-30px) translateX(15px) rotate(8deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes rainbow-pulse {
+  0%, 100% { 
+    filter: hue-rotate(0deg) brightness(1);
+    transform: scale(1);
+  }
+  33% { 
+    filter: hue-rotate(120deg) brightness(1.2);
+    transform: scale(1.05);
+  }
+  66% { 
+    filter: hue-rotate(240deg) brightness(0.9);
+    transform: scale(0.95);
+  }
+}
+
+@keyframes fairy-dance {
+  0%, 100% { 
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.3;
+  }
+  25% { 
+    transform: translateY(-15px) translateX(20px);
+    opacity: 0.6;
+  }
+  50% { 
+    transform: translateY(-25px) translateX(-10px);
+    opacity: 0.8;
+  }
+  75% { 
+    transform: translateY(-5px) translateX(30px);
+    opacity: 0.4;
+  }
+}
+
+/* Éléments magiques flottants */
+.magical-elements {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.rainbow-element {
+  position: absolute;
+  font-size: 2rem;
+  animation: float-elements 15s ease-in-out infinite;
+  user-select: none;
+}
+
+.rainbow-element:nth-child(1) {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.rainbow-element:nth-child(2) {
+  top: 60%;
+  right: 15%;
+  animation-delay: 3s;
+}
+
+.rainbow-element:nth-child(3) {
+  top: 40%;
+  left: 70%;
+  animation-delay: 6s;
+}
+
+.dinosaur-element {
+  position: absolute;
+  font-size: 1.8rem;
+  animation: float-elements 20s ease-in-out infinite;
+  user-select: none;
+}
+
+.dinosaur-element:nth-child(4) {
+  top: 30%;
+  left: 80%;
+  animation-delay: 2s;
+}
+
+.dinosaur-element:nth-child(5) {
+  top: 70%;
+  left: 20%;
+  animation-delay: 8s;
+}
+
+.fairy-element {
+  position: absolute;
+  font-size: 1.5rem;
+  animation: fairy-dance 12s ease-in-out infinite;
+  user-select: none;
+}
+
+.fairy-element:nth-child(6) {
+  top: 15%;
+  left: 50%;
+  animation-delay: 1s;
+}
+
+.fairy-element:nth-child(7) {
+  top: 80%;
+  right: 30%;
+  animation-delay: 5s;
+}
+
+.fairy-element:nth-child(8) {
+  top: 50%;
+  left: 30%;
+  animation-delay: 9s;
 }
