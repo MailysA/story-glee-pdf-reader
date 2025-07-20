@@ -14,13 +14,23 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check URL params for reset mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    
+    if (mode === 'reset') {
+      setResetMode(true);
+    }
+
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      if (session && mode !== 'reset') {
         navigate("/dashboard");
       }
     };
@@ -104,6 +114,35 @@ export default function Auth() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Email envoyé !",
+        description: "Vérifiez votre boîte email pour réinitialiser votre mot de passe.",
+      });
+      
+      setResetMode(false);
+      setResetEmail("");
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{background: "var(--gradient-rainbow)"}}>
       <div className="w-full max-w-md">
@@ -134,36 +173,94 @@ export default function Auth() {
               </TabsList>
               
               <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="parent@exemple.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
+                {!resetMode ? (
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="parent@exemple.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Mot de passe</Label>
+                        <Button
+                          type="button"
+                          variant="link"
+                          size="sm"
+                          onClick={() => setResetMode(true)}
+                          className="p-0 h-auto text-xs text-muted-foreground hover:text-primary"
+                        >
+                          Mot de passe oublié ?
+                        </Button>
+                      </div>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-primary to-primary-glow" 
+                      disabled={loading}
+                    >
+                      {loading ? "Connexion..." : "Se connecter"}
+                    </Button>
+                  </form>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="text-center space-y-2">
+                      <h3 className="font-medium">Réinitialiser votre mot de passe</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+                      </p>
+                    </div>
+                    
+                    <form onSubmit={handleResetPassword} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="reset-email">Email</Label>
+                        <Input
+                          id="reset-email"
+                          type="email"
+                          placeholder="parent@exemple.com"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-gradient-to-r from-primary to-primary-glow" 
+                          disabled={loading}
+                        >
+                          {loading ? "Envoi en cours..." : "Envoyer le lien de réinitialisation"}
+                        </Button>
+                        
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => {
+                            setResetMode(false);
+                            setResetEmail("");
+                          }}
+                          className="w-full"
+                        >
+                          Retour à la connexion
+                        </Button>
+                      </div>
+                    </form>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Mot de passe</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-primary to-primary-glow" 
-                    disabled={loading}
-                  >
-                    {loading ? "Connexion..." : "Se connecter"}
-                  </Button>
-                </form>
+                )}
               </TabsContent>
               
               <TabsContent value="signup">
