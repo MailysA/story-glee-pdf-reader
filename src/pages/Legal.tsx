@@ -1,8 +1,42 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Home } from "lucide-react";
 
 export default function Legal() {
+  const navigate = useNavigate();
+  
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-2xl">
+      {/* Header avec boutons de navigation */}
+      <div className="flex items-center justify-between mb-8">
+        <Button
+          variant="outline"
+          onClick={handleGoBack}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Retour
+        </Button>
+        
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2"
+        >
+          <Home className="w-4 h-4" />
+          Accueil
+        </Button>
+      </div>
+      
       <h1 className="text-3xl font-bold mb-6">Mentions légales & Politique de confidentialité</h1>
       <h2 className="text-xl font-semibold mt-8 mb-2">Éditeur de l'application</h2>
       <p>Nom de l’éditeur : <b>[À compléter]</b><br/>Adresse : <b>[À compléter]</b><br/>Contact : <b>[À compléter]</b></p>

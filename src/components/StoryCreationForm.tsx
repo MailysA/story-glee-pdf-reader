@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Sparkles, Wand2, Heart, Star, Image, Crown } from "lucide-react";
+import { Sparkles, Wand2, Heart, Star, Image, Crown, Search, X, ChevronDown, ChevronUp } from "lucide-react";
 
 const narrativeTones = [
   { value: "doux", label: "🌸 Doux", description: "Histoires tendres et rassurantes" },
@@ -109,8 +110,52 @@ export function StoryCreationForm() {
   const [narrativeTone, setNarrativeTone] = useState("");
   const [customDetails, setCustomDetails] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchTheme, setSearchTheme] = useState("");
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const { checkStoryLimit, refreshUsage } = useUsageLimits();
   const { isPremium, refreshSubscription, subscriptionTier } = useSubscription();
+
+  // Filtrage des thèmes basé sur la recherche
+  const filteredCategories = useMemo(() => {
+    if (!searchTheme.trim()) return themeCategories;
+    
+    return themeCategories
+      .map(category => ({
+        ...category,
+        themes: category.themes.filter(theme =>
+          theme.label.toLowerCase().includes(searchTheme.toLowerCase()) ||
+          theme.description.toLowerCase().includes(searchTheme.toLowerCase())
+        )
+      }))
+      .filter(category => category.themes.length > 0);
+  }, [searchTheme]);
+
+  // Fonction pour plier/déplier les catégories
+  const toggleCategory = (categoryName: string) => {
+    const newCollapsed = new Set(collapsedCategories);
+    if (newCollapsed.has(categoryName)) {
+      newCollapsed.delete(categoryName);
+    } else {
+      newCollapsed.add(categoryName);
+    }
+    setCollapsedCategories(newCollapsed);
+  };
+
+  // Fonction de raccourci pour sélectionner des thèmes populaires
+  const selectQuickTheme = (themeValue: string) => {
+    setSelectedTheme(themeValue);
+    setSearchTheme(""); // Clear search when a theme is selected
+  };
+
+  // Thèmes populaires pour accès rapide
+  const popularThemes = [
+    { value: "conte-de-fees", label: "✨ Conte de Fées" },
+    { value: "aventure", label: "🗺️ Aventure" },
+    { value: "pirate", label: "🏴‍☠️ Pirates" },
+    { value: "princesse", label: "👑 Princesse" },
+    { value: "dinosaures", label: "🦕 Dinosaures" },
+    { value: "ocean", label: "🌊 Océan" }
+  ];
 
   // Remove the refresh subscription on mount to prevent infinite loops
   // The subscription status is already managed by the useSubscription hook
@@ -265,64 +310,154 @@ export function StoryCreationForm() {
 
       {/* Theme Selection */}
       <div className="space-y-6">
-        <Label className="text-base font-medium">Thème de l'histoire *</Label>
+        <div className="flex items-center justify-between">
+          <Label className="text-base font-medium">Thème de l'histoire *</Label>
+          {selectedTheme && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Star className="w-3 h-3" />
+              Thème sélectionné
+            </Badge>
+          )}
+        </div>
+
+        {/* Thèmes populaires - Accès rapide */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <span className="text-lg">⭐</span>
+            Thèmes populaires
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {popularThemes.map((theme) => (
+              <Button
+                key={theme.value}
+                type="button"
+                variant={selectedTheme === theme.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => selectQuickTheme(theme.value)}
+                className="h-8 text-xs"
+              >
+                {theme.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Barre de recherche */}
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un thème (ex: pirate, fée, dinosaure...)"
+              value={searchTheme}
+              onChange={(e) => setSearchTheme(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {searchTheme && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setSearchTheme("")}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            )}
+          </div>
+          {searchTheme && (
+            <p className="text-xs text-muted-foreground">
+              {filteredCategories.reduce((total, cat) => total + cat.themes.length, 0)} thème(s) trouvé(s)
+            </p>
+          )}
+        </div>
         
-        {themeCategories.map((category) => (
+        {/* Catégories de thèmes */}
+        {filteredCategories.map((category) => (
           <div key={category.name} className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <span className="text-lg">{category.icon}</span>
-              {category.name}
+            <div 
+              className="flex items-center justify-between cursor-pointer hover:text-primary transition-colors"
+              onClick={() => toggleCategory(category.name)}
+            >
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <span className="text-lg">{category.icon}</span>
+                {category.name}
+                <Badge variant="outline" className="text-xs">
+                  {category.themes.length}
+                </Badge>
+              </div>
+              {collapsedCategories.has(category.name) ? (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              )}
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {category.themes.map((theme) => (
-                <Card
-                  key={theme.value}
-                  className={`cursor-pointer transition-all hover:shadow-lg overflow-hidden ${
-                    selectedTheme === theme.value
-                      ? "ring-2 ring-primary bg-primary/5"
-                      : "hover:bg-muted/50"
-                  }`}
-                  onClick={() => setSelectedTheme(theme.value)}
-                >
-                  <CardContent className="p-0">
-                    {theme.video ? (
-                      <div className="relative">
-                        <video 
-                          className="w-full h-32 object-cover"
-                          autoPlay 
-                          loop 
-                          muted
-                          playsInline
-                        >
-                          <source src={theme.video} type="video/mp4" />
-                        </video>
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                          <div className="text-white text-center">
+            {!collapsedCategories.has(category.name) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {category.themes.map((theme) => (
+                  <Card
+                    key={theme.value}
+                    className={`cursor-pointer transition-all hover:shadow-lg overflow-hidden ${
+                      selectedTheme === theme.value
+                        ? "ring-2 ring-primary bg-primary/5"
+                        : "hover:bg-muted/50"
+                    }`}
+                    onClick={() => setSelectedTheme(theme.value)}
+                  >
+                    <CardContent className="p-0">
+                      {theme.video ? (
+                        <div className="relative">
+                          <video 
+                            className="w-full h-32 object-cover"
+                            autoPlay 
+                            loop 
+                            muted
+                            playsInline
+                          >
+                            <source src={theme.video} type="video/mp4" />
+                          </video>
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <div className="text-white text-center">
+                              <div className="text-2xl mb-1">{theme.label.split(" ")[0]}</div>
+                              <div className="font-medium text-sm">{theme.label.split(" ").slice(1).join(" ")}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-32 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                          <div className="text-center">
                             <div className="text-2xl mb-1">{theme.label.split(" ")[0]}</div>
                             <div className="font-medium text-sm">{theme.label.split(" ").slice(1).join(" ")}</div>
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="h-32 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="text-2xl mb-1">{theme.label.split(" ")[0]}</div>
-                          <div className="font-medium text-sm">{theme.label.split(" ").slice(1).join(" ")}</div>
+                      )}
+                      <div className="p-3 text-center">
+                        <div className="text-xs text-muted-foreground">
+                          {theme.description}
                         </div>
                       </div>
-                    )}
-                    <div className="p-3 text-center">
-                      <div className="text-xs text-muted-foreground">
-                        {theme.description}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         ))}
+
+        {filteredCategories.length === 0 && searchTheme && (
+          <div className="text-center py-8 text-muted-foreground">
+            <Search className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p>Aucun thème trouvé pour "{searchTheme}"</p>
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => setSearchTheme("")}
+              className="mt-2"
+            >
+              Effacer la recherche
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Narrative Tone Selection */}
