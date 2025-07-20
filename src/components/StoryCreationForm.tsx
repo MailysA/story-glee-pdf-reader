@@ -169,7 +169,7 @@ export function StoryCreationForm() {
     { value: "heroique", label: "🦸‍♂️ Héroïque" }
   ];
 
-  // Vérification de l'authentification au chargement
+  // Mode hors ligne - permettre l'utilisation sans authentification
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -177,15 +177,9 @@ export function StoryCreationForm() {
         setIsAuthenticated(!!user);
         setAuthLoading(false);
         
-        if (!user) {
-          toast({
-            title: "⚠️ Connexion requise",
-            description: "Vous devez être connecté pour créer une histoire. Veuillez vous connecter avant de continuer.",
-            variant: "destructive",
-          });
-        }
+        // Ne plus afficher de toast d'erreur - mode hors ligne autorisé
       } catch (error) {
-        console.error('Erreur vérification auth:', error);
+        console.log('Mode hors ligne - authentification non disponible');
         setIsAuthenticated(false);
         setAuthLoading(false);
       }
@@ -217,17 +211,16 @@ export function StoryCreationForm() {
       return;
     }
 
-    // Vérifier les limites avant de créer
-    if (!checkStoryLimit()) {
+    // Vérifier les limites seulement si connecté
+    if (isAuthenticated && !checkStoryLimit()) {
       return;
     }
 
     setLoading(true);
 
     try {
-      // Get current user
+      // Obtenir l'utilisateur actuel (peut être null en mode hors ligne)
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Utilisateur non connecté");
 
       // Generate AI story
       const { data: storyData, error: storyError } = await supabase.functions.invoke('generate-story', {
@@ -266,26 +259,35 @@ export function StoryCreationForm() {
         // Continue sans illustration, pas bloquant
       }
 
-      // Save story to database
-      const { error } = await supabase
-        .from("stories")
-        .insert({
-          user_id: user.id,
-          title: storyData.title || `L'aventure de ${childName}`,
-          theme: selectedTheme,
-          child_name: childName,
-          child_age: parseInt(childAge),
-          story_content: storyData.story,
-          illustration_url: illustrationUrl,
-        });
+      // Save story to database only if user is authenticated
+      if (user) {
+        const { error } = await supabase
+          .from("stories")
+          .insert({
+            user_id: user.id,
+            title: storyData.title || `L'aventure de ${childName}`,
+            theme: selectedTheme,
+            child_name: childName,
+            child_age: parseInt(childAge),
+            story_content: storyData.story,
+            illustration_url: illustrationUrl,
+          });
 
-      if (error) throw error;
+        if (error) throw error;
+        
+        // Refresh usage data only if authenticated
+        await refreshUsage();
+      }
 
       toast({
         title: "Histoire créée!",
-        description: illustrationUrl 
-          ? "Votre histoire magique avec illustration a été générée et sauvegardée."
-          : "Votre histoire magique a été générée et sauvegardée.",
+        description: user 
+          ? (illustrationUrl 
+            ? "Votre histoire magique avec illustration a été générée et sauvegardée."
+            : "Votre histoire magique a été générée et sauvegardée.")
+          : (illustrationUrl
+            ? "Votre histoire magique avec illustration a été générée (mode hors ligne)."
+            : "Votre histoire magique a été générée (mode hors ligne)."),
         action: illustrationUrl ? (
           <div className="flex items-center gap-1 text-xs">
             <Image className="w-3 h-3" />
@@ -300,9 +302,6 @@ export function StoryCreationForm() {
       setSelectedTheme("");
       setNarrativeTone("");
       setCustomDetails("");
-
-      // Refresh usage data
-      await refreshUsage();
 
     } catch (error: any) {
       console.error("Erreur complète:", error);
@@ -322,35 +321,27 @@ export function StoryCreationForm() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <Sparkles className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Vérification de l'authentification...</p>
+          <p className="text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
   }
 
-  // Affichage si l'utilisateur n'est pas authentifié
-  if (!isAuthenticated) {
-    return (
-      <div className="text-center py-12 space-y-4">
-        <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center">
-          <Wand2 className="w-8 h-8 text-red-500" />
-        </div>
-        <h3 className="text-xl font-semibold text-foreground">Connexion requise</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          Vous devez être connecté pour créer des histoires magiques. 
-          Connectez-vous pour accéder à toutes les fonctionnalités !
-        </p>
-        <Button 
-          onClick={() => window.location.href = '/auth'}
-          className="bg-gradient-to-r from-primary to-primary-glow"
-        >
-          Se connecter
-        </Button>
-      </div>
-    );
-  }
+  // Mode hors ligne autorisé - ne plus bloquer l'accès
 
   return (
+    <div className="space-y-6">
+      {/* Indicateur de mode de connexion */}
+      <div className="flex justify-center">
+        <Badge 
+          variant={isAuthenticated ? "default" : "outline"} 
+          className={`flex items-center gap-2 ${isAuthenticated ? "bg-green-100 text-green-800 border-green-200" : "bg-orange-100 text-orange-800 border-orange-200"}`}
+        >
+          <div className={`w-2 h-2 rounded-full ${isAuthenticated ? "bg-green-500" : "bg-orange-500"}`} />
+          {isAuthenticated ? "Mode connecté" : "Mode hors ligne"}
+        </Badge>
+      </div>
+
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Child Information */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -672,5 +663,6 @@ export function StoryCreationForm() {
         </Button>
       </div>
     </form>
+    </div>
   );
 }
