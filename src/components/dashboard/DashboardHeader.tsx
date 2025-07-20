@@ -37,12 +37,12 @@ export function DashboardHeader({
     <div className="bg-white/95 backdrop-blur-sm border-b shadow-lg">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-foreground">MagicTales</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">MagicTales</h1>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="flex bg-muted rounded-lg p-1">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="hidden sm:flex bg-muted rounded-lg p-1">
               <Button
                 variant={activeTab === "create" ? "default" : "ghost"}
                 size="sm"
@@ -50,7 +50,7 @@ export function DashboardHeader({
                 className="flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Créer
+                <span className="hidden md:inline">Créer</span>
               </Button>
               <Button
                 variant={activeTab === "library" ? "default" : "ghost"}
@@ -59,7 +59,27 @@ export function DashboardHeader({
                 className="flex items-center gap-2"
               >
                 <Library className="w-4 h-4" />
-                Bibliothèque
+                <span className="hidden md:inline">Bibliothèque</span>
+              </Button>
+            </div>
+            
+            {/* Mobile tabs */}
+            <div className="flex sm:hidden bg-muted rounded-lg p-1">
+              <Button
+                variant={activeTab === "create" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => onTabChange("create")}
+                className="px-2"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={activeTab === "library" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => onTabChange("library")}
+                className="px-2"
+              >
+                <Library className="w-4 h-4" />
               </Button>
             </div>
             
@@ -71,10 +91,10 @@ export function DashboardHeader({
                   className="flex items-center gap-2"
                 >
                   <Settings className="w-4 h-4" />
-                  Paramètres
+                  <span className="hidden sm:inline">Paramètres</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80">
+              <PopoverContent className="w-80 mr-4">
                 <div className="space-y-4">
                   <UserProfile 
                     user={user} 
