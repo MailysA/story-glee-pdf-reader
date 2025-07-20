@@ -112,13 +112,8 @@ export function StoryCreationForm() {
   const { checkStoryLimit, refreshUsage } = useUsageLimits();
   const { isPremium, refreshSubscription, subscriptionTier } = useSubscription();
 
-  // Rafraîchir le statut d'abonnement au montage du composant
-  useEffect(() => {
-    const refreshStatus = async () => {
-      await refreshSubscription();
-    };
-    refreshStatus();
-  }, [refreshSubscription]);
+  // Remove the refresh subscription on mount to prevent infinite loops
+  // The subscription status is already managed by the useSubscription hook
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

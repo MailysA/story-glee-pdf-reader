@@ -30,56 +30,27 @@ export const useSubscription = () => {
         return;
       }
 
-      // Essayer d'appeler la fonction edge pour vérifier l'abonnement Stripe
-      try {
-        const { data, error } = await supabase.functions.invoke('check-subscription');
-        
-        if (error) {
-          console.warn('Edge function check-subscription non disponible:', error.message);
-          // Fallback: utiliser les données locales de la base Supabase
-          const { data: subscriberData } = await supabase
-            .from('subscribers')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
+      // Temporarily skip edge function and use local data only to prevent infinite loop
+      console.log('Checking subscription using local data only (edge function disabled)');
+      
+      const { data: subscriberData } = await supabase
+        .from('subscribers')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
 
-          setSubscription({
-            isPremium: subscriberData?.subscribed || false,
-            subscriptionTier: subscriberData?.subscription_tier || null,
-            subscriptionEnd: subscriberData?.subscription_end || null,
-            loading: false
-          });
-          return;
-        }
+      setSubscription({
+        isPremium: subscriberData?.subscribed || false,
+        subscriptionTier: subscriberData?.subscription_tier || null,
+        subscriptionEnd: subscriberData?.subscription_end || null,
+        loading: false
+      });
 
-        setSubscription({
-          isPremium: data?.subscribed || false,
-          subscriptionTier: data?.subscription_tier || null,
-          subscriptionEnd: data?.subscription_end || null,
-          loading: false
-        });
-
-        if (showToast && data?.subscribed) {
-          const { toast } = await import("@/hooks/use-toast");
-          toast({
-            title: "Abonnement vérifié",
-            description: `Votre plan ${data.subscription_tier} est actif.`,
-          });
-        }
-      } catch (edgeFunctionError) {
-        console.warn('Edge function non accessible, mode dégradé activé');
-        // Mode dégradé: utiliser seulement les données locales
-        const { data: subscriberData } = await supabase
-          .from('subscribers')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        setSubscription({
-          isPremium: subscriberData?.subscribed || false,
-          subscriptionTier: subscriberData?.subscription_tier || null,
-          subscriptionEnd: subscriberData?.subscription_end || null,
-          loading: false
+      if (showToast && subscriberData?.subscribed) {
+        const { toast } = await import("@/hooks/use-toast");
+        toast({
+          title: "Abonnement vérifié",
+          description: `Votre plan ${subscriberData.subscription_tier} est actif.`,
         });
       }
     } catch (error) {
