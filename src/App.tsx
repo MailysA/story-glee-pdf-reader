@@ -21,8 +21,19 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         {/* Contenu principal + footer */}
-        <div className="min-h-screen flex flex-col">
-          <div className="flex-1">
+        <div className="min-h-screen flex flex-col relative" style={{background: "var(--gradient-rainbow)"}}>
+          {/* Éléments magiques animés */}
+          <div className="magical-elements">
+            <div className="rainbow-element">🌈</div>
+            <div className="rainbow-element">⭐</div>
+            <div className="rainbow-element">🌙</div>
+            <div className="dinosaur-element">🦕</div>
+            <div className="dinosaur-element">🦖</div>
+            <div className="fairy-element">🧚‍♀️</div>
+            <div className="fairy-element">✨</div>
+            <div className="fairy-element">🦋</div>
+          </div>
+          <div className="flex-1 relative z-10">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />

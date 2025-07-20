@@ -54,11 +54,7 @@ export default function Dashboard() {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
-        if (!session) {
-          navigate("/auth");
-        }
-        // Remove async calls from auth state change to prevent loops
+        // Remove redirect for offline mode - allow access without authentication
       }
     );
 
@@ -67,11 +63,7 @@ export default function Dashboard() {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
-      if (!session) {
-        navigate("/auth");
-      }
-      // Subscription and usage data will be loaded by their respective hooks
+      // Remove redirect for offline mode - allow access without authentication
     });
 
     return () => subscription.unsubscribe();
@@ -160,21 +152,19 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{background: "var(--gradient-rainbow)"}}>
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Sparkles className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
-          <p className="text-white text-xl">Chargement de la magie...</p>
+          <Sparkles className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-foreground text-xl">Chargement de la magie...</p>
         </div>
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  // Allow access even without user for offline mode
 
   return (
-    <div className="min-h-screen" style={{background: "var(--gradient-primary)"}}>
+    <div className="min-h-screen">
       
       {/* Header */}
       <DashboardHeader

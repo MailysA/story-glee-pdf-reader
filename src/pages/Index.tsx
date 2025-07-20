@@ -20,19 +20,7 @@ const Index = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen relative" style={{background: "var(--gradient-rainbow)"}}>
-      {/* Éléments magiques animés */}
-      <div className="magical-elements">
-        <div className="rainbow-element">🌈</div>
-        <div className="rainbow-element">⭐</div>
-        <div className="rainbow-element">🌙</div>
-        <div className="dinosaur-element">🦕</div>
-        <div className="dinosaur-element">🦖</div>
-        <div className="fairy-element">🧚‍♀️</div>
-        <div className="fairy-element">✨</div>
-        <div className="fairy-element">🦋</div>
-      </div>
-      
+    <div className="min-h-screen relative">
       <div className="container mx-auto px-4 py-12 relative z-10">
         {/* Hero Section */}
         <div className="text-center">
