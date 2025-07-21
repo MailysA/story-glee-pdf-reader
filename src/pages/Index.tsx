@@ -32,14 +32,25 @@ const Index = () => {
           <p className="text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
             Créez des histoires personnalisées et magiques pour vos enfants avec l'intelligence artificielle
           </p>
-          <Button
-            size="lg"
-            onClick={() => navigate("/dashboard")}
-            className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground hover:shadow-glow px-12 py-6 text-2xl font-semibold shadow-sweet transition-all duration-300 hover:scale-105"
-          >
-            <Wand2 className="w-8 h-8 mr-3" />
-            Créer mon histoire
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              size="lg"
+              onClick={() => navigate("/dashboard")}
+              className="bg-gradient-to-r from-primary to-primary-glow text-primary-foreground hover:shadow-glow px-12 py-6 text-2xl font-semibold shadow-sweet transition-all duration-300 hover:scale-105"
+            >
+              <Wand2 className="w-8 h-8 mr-3" />
+              Créer mon histoire
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate("/library")}
+              className="px-12 py-6 text-2xl font-semibold transition-all duration-300 hover:scale-105 border-2 hover:bg-primary/10"
+            >
+              <BookOpen className="w-8 h-8 mr-3" />
+              Bibliothèque publique
+            </Button>
+          </div>
         </div>
       </div>
     </div>
