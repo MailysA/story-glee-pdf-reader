@@ -237,28 +237,7 @@ export function StoryCreationForm() {
       if (storyError) throw storyError;
       if (!storyData?.story) throw new Error("Erreur lors de la génération de l'histoire");
 
-      // Generate illustration
-      let illustrationUrl = null;
-      try {
-        console.log("Génération de l'illustration...");
-        const { data: illustrationData, error: illustrationError } = await supabase.functions.invoke('generate-illustration', {
-          body: {
-            theme: selectedTheme,
-            childName,
-            storyTitle: storyData.title || `L'aventure de ${childName}`
-          }
-        });
-
-        if (illustrationError) {
-          console.error("Erreur illustration:", illustrationError);
-        } else if (illustrationData?.imageUrl) {
-          illustrationUrl = illustrationData.imageUrl;
-          console.log("Illustration générée:", illustrationUrl);
-        }
-      } catch (illustrationError) {
-        console.error("Erreur lors de la génération de l'illustration:", illustrationError);
-        // Continue sans illustration, pas bloquant
-      }
+      // No illustration generation - using video themes instead
 
       // Save story to database only if user is authenticated
       if (user) {
@@ -271,7 +250,6 @@ export function StoryCreationForm() {
             child_name: childName,
             child_age: parseInt(childAge),
             story_content: storyData.story,
-            illustration_url: illustrationUrl,
           });
 
         if (error) throw error;
@@ -283,18 +261,8 @@ export function StoryCreationForm() {
       toast({
         title: "Histoire créée!",
         description: user 
-          ? (illustrationUrl 
-            ? "Votre histoire magique avec illustration a été générée et sauvegardée."
-            : "Votre histoire magique a été générée et sauvegardée.")
-          : (illustrationUrl
-            ? "Votre histoire magique avec illustration a été générée (mode hors ligne)."
-            : "Votre histoire magique a été générée (mode hors ligne)."),
-        action: illustrationUrl ? (
-          <div className="flex items-center gap-1 text-xs">
-            <Image className="w-3 h-3" />
-            Avec illustration
-          </div>
-        ) : undefined,
+          ? "Votre histoire magique a été générée et sauvegardée."
+          : "Votre histoire magique a été générée (mode hors ligne).",
       });
 
       // Reset form

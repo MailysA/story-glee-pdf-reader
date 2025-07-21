@@ -132,7 +132,7 @@ export function StoryLibrary() {
           id: selectedStory.id,
           title: selectedStory.title,
           content: selectedStory.story_content,
-          illustration_url: selectedStory.illustration_url,
+          theme: selectedStory.theme,
           audio_url: selectedStory.audio_url
         }} />
       </div>

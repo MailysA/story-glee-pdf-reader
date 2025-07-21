@@ -22,7 +22,6 @@ const createContentHash = (content: string) => {
 interface StoryPage {
   id: number;
   text: string;
-  illustration?: string;
   audioUrl?: string;
 }
 
@@ -31,7 +30,7 @@ interface StoryReaderProps {
     id: string;
     title: string;
     content: string;
-    illustration_url?: string;
+    theme: string;
     audio_url?: string;
   };
 }
@@ -43,79 +42,41 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
   const [loadingIllustrations, setLoadingIllustrations] = useState<{[key: number]: boolean}>({});
   const [showSandAnimation, setShowSandAnimation] = useState(false);
 
-  const loadCoverIllustration = async (storyPages: StoryPage[]) => {
-    try {
-      // Vérifier s'il existe déjà une illustration de couverture (page 0)
-      const { data: existingCover, error } = await supabase
-        .from('story_page_illustrations')
-        .select('illustration_url, page_content_hash')
-        .eq('story_id', story.id)
-        .eq('page_number', 0)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-
-      const titleHash = createContentHash(story.title);
-      
-      // Si l'illustration de couverture existe et correspond au titre actuel
-      if (existingCover && existingCover.page_content_hash === titleHash) {
-        const updatedPages = storyPages.map(page => 
-          page.id === 0 ? { ...page, illustration: existingCover.illustration_url } : page
-        );
-        setPages(updatedPages);
-      } else {
-        // Initialiser les pages sans illustrations
-        setPages(storyPages);
-      }
-    } catch (error) {
-      console.error('Erreur chargement couverture:', error);
-      setPages(storyPages);
-    }
-  };
-
-  const generateIllustrationForPage = async (pageText: string, pageId: number) => {
-    try {
-      setLoadingIllustrations(prev => ({ ...prev, [pageId]: true }));
-      
-      const { data, error } = await supabase.functions.invoke('generate-illustration', {
-        body: {
-          theme: story.title,
-          childName: "l'enfant",
-          storyTitle: story.title,
-          pageContent: pageText
-        }
-      });
-
-      if (error) throw error;
-
-      // Sauvegarder l'illustration en base de données
-      const contentHash = createContentHash(pageText);
-      const { error: saveError } = await supabase
-        .from('story_page_illustrations')
-        .upsert({
-          story_id: story.id,
-          page_number: pageId,
-          page_content_hash: contentHash,
-          illustration_url: data.imageUrl
-        }, { 
-          onConflict: 'story_id,page_number',
-          ignoreDuplicates: false 
-        });
-
-      if (saveError) {
-        console.error('Erreur sauvegarde illustration:', saveError);
-      }
-
-      setPages(prevPages => prevPages.map(page => 
-        page.id === pageId 
-          ? { ...page, illustration: data.imageUrl }
-          : page
-      ));
-    } catch (error) {
-      console.error('Erreur génération illustration:', error);
-    } finally {
-      setLoadingIllustrations(prev => ({ ...prev, [pageId]: false }));
-    }
+  // Video mapping based on theme
+  const getThemeVideo = (theme: string) => {
+    const videoMap: { [key: string]: string } = {
+      "conte-de-fees": "/videos/farytail.mp4",
+      "princesse": "/videos/princess.mp4",
+      "sorciere": "/videos/witch.mp4",
+      "fantome": "/videos/ghost.mp4",
+      "aventure": "/videos/adventure1.mp4",
+      "aventure-jungle": "/videos/adventure2.mp4",
+      "pirate": "/videos/pirate.mp4",
+      "alien": "/videos/alien.mp4",
+      "foret": "/videos/forest1.mp4",
+      "foret-enchantee": "/videos/magic-forest.mp4",
+      "ocean": "/videos/ocean.mp4",
+      "banquise": "/videos/banquise.mp4",
+      "environnement": "/videos/environment.mp4",
+      "egypte": "/videos/egypte.mp4",
+      "moyen-age": "/videos/moyen-age.mp4",
+      "renaissance": "/videos/renaissance.mp4",
+      "revolution": "/videos/revolution.mp4",
+      "dinosaures": "/videos/dinosaures.mp4",
+      "robots": "/videos/robots.mp4",
+      "industriel": "/videos/industriel.mp4",
+      "alphabet": "/videos/alphabet.mp4",
+      "nombres": "/videos/numbers.mp4",
+      "logique": "/videos/logic.mp4",
+      "emotions": "/videos/emotions.mp4",
+      "respect": "/videos/respect.mp4",
+      "bonnes-manieres": "/videos/goodmaners.mp4",
+      "recyclage": "/videos/recycling.mp4",
+      "cirque": "/videos/circus.mp4",
+      "bonbons": "/videos/candys.mp4",
+      "maison-magique": "/videos/magic-house.mp4"
+    };
+    return videoMap[theme] || "/videos/book.mp4"; // fallback video
   };
 
   useEffect(() => {
@@ -129,12 +90,10 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
       storyPages.push({
         id: pageId,
         text: pageText.trim(),
-        illustration: undefined,
       });
     }
 
-    // Charger l'illustration de couverture
-    loadCoverIllustration(storyPages);
+    setPages(storyPages);
   }, [story]);
 
   const handlePageChange = (direction: 'next' | 'prev') => {
@@ -215,22 +174,18 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
                   </p>
                 </div>
 
-                {/* Illustration Side - Seulement pour la première page */}
+                {/* Video Side - Only for first page */}
                 <div className="flex items-center justify-center">
                   {currentPage === 0 ? (
-                    pages[0]?.illustration ? (
-                      <img 
-                        src={pages[0].illustration} 
-                        alt={`Couverture de ${story.title}`}
-                        className="max-w-full h-auto rounded-lg shadow-lg max-h-80"
-                      />
-                    ) : (
-                      <div className="w-64 h-64 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg flex items-center justify-center">
-                        <BookOpen className="w-16 h-16 text-muted-foreground" />
-                      </div>
-                    )
+                    <video 
+                      src={getThemeVideo(story.theme)} 
+                      autoPlay
+                      loop
+                      muted
+                      className="max-w-full h-auto rounded-lg shadow-lg max-h-80"
+                    />
                   ) : (
-                    // Espace vide pour les autres pages (pas d'illustration)
+                    // Empty space for other pages
                     <div className="w-64 h-64 flex items-center justify-center">
                       <div className="text-center text-muted-foreground">
                         <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
