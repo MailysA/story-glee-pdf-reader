@@ -28,7 +28,7 @@ export const UsageLimitCard = ({
   // Définir les limites selon l'abonnement
   const getSubscriptionLimits = () => {
     if (!isPremium) {
-      return { stories: 1, downloads: 0, audioGenerations: 0 }; // Modèle freemium très limité
+      return { stories: 1, downloads: 1, audioGenerations: 1 }; // Modèle freemium: 1 de chaque
     }
     
     switch (subscriptionTier) {
@@ -39,7 +39,7 @@ export const UsageLimitCard = ({
       case 'Enterprise':
         return { stories: -1, downloads: -1, audioGenerations: -1 }; // Illimité
       default:
-        return { stories: 1, downloads: 0, audioGenerations: 0 };
+        return { stories: 1, downloads: 1, audioGenerations: 1 };
     }
   };
 
@@ -94,16 +94,14 @@ export const UsageLimitCard = ({
               {!isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Premium</span>}
             </div>
             <span className="font-medium">
-              {limits.downloads === -1 ? 'Illimité' : !isPremium ? 'Bloqué' : `${downloadsUsed}/${actualDownloadsLimit}`}
+              {limits.downloads === -1 ? 'Illimité' : `${downloadsUsed}/${actualDownloadsLimit}`}
             </span>
           </div>
-          <Progress value={!isPremium ? 0 : actualDownloadsPercentage} className="h-2" />
+          <Progress value={actualDownloadsPercentage} className="h-2" />
           {limits.downloads === -1 ? (
             <p className="text-xs text-muted-foreground">
               Téléchargements illimités ✨
             </p>
-          ) : !isPremium ? (
-            <p className="text-xs text-amber-600">Fonctionnalité Premium uniquement</p>
           ) : downloadsUsed >= actualDownloadsLimit ? (
             <p className="text-xs text-destructive">Limite atteinte !</p>
           ) : (
@@ -122,16 +120,14 @@ export const UsageLimitCard = ({
               {!isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Premium</span>}
             </div>
             <span className="font-medium">
-              {limits.audioGenerations === -1 ? 'Illimité' : !isPremium ? 'Bloqué' : `${audioGenerationsUsed}/${actualAudioLimit}`}
+              {limits.audioGenerations === -1 ? 'Illimité' : `${audioGenerationsUsed}/${actualAudioLimit}`}
             </span>
           </div>
-          <Progress value={!isPremium ? 0 : actualAudioPercentage} className="h-2" />
+          <Progress value={actualAudioPercentage} className="h-2" />
           {limits.audioGenerations === -1 ? (
             <p className="text-xs text-muted-foreground">
               Audio illimité ✨
             </p>
-          ) : !isPremium ? (
-            <p className="text-xs text-amber-600">Fonctionnalité Premium uniquement</p>
           ) : audioGenerationsUsed >= actualAudioLimit ? (
             <p className="text-xs text-destructive">Limite atteinte !</p>
           ) : (

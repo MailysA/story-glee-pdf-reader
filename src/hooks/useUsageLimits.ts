@@ -5,9 +5,9 @@ import { useSubscription } from "@/hooks/useSubscription";
 
 const FREE_STORY_LIMIT = 1; // Limite freemium à 1 histoire
 const PREMIUM_STORY_LIMIT = 30;
-const FREE_DOWNLOAD_LIMIT = 0; // Pas de téléchargement en freemium
+const FREE_DOWNLOAD_LIMIT = 1; // 1 téléchargement en freemium
 const PREMIUM_DOWNLOAD_LIMIT = Infinity; // Illimité pour les premium
-const FREE_AUDIO_LIMIT = 0; // Pas de génération audio en freemium
+const FREE_AUDIO_LIMIT = 1; // 1 génération audio en freemium
 const PREMIUM_AUDIO_LIMIT = 30;
 
 interface UsageLimits {
@@ -92,8 +92,8 @@ export const useUsageLimits = () => {
 
       if (!usage.canDownload && !isPremium) {
         toast({
-          title: "Fonctionnalité Premium",
-          description: "Le téléchargement est réservé aux utilisateurs Premium. Passez au premium pour débloquer cette fonctionnalité !",
+          title: "Limite atteinte",
+          description: "Vous avez utilisé votre téléchargement gratuit. Passez au premium pour des téléchargements illimités !",
           variant: "destructive",
         });
         return false;
@@ -135,8 +135,8 @@ export const useUsageLimits = () => {
 
       if (!usage.canGenerateAudio && !isPremium) {
         toast({
-          title: "Fonctionnalité Premium",
-          description: "La génération audio est réservée aux utilisateurs Premium. Passez au premium pour débloquer cette fonctionnalité !",
+          title: "Limite atteinte",
+          description: "Vous avez utilisé votre génération audio gratuite. Passez au premium pour l'audio illimité !",
           variant: "destructive",
         });
         return false;
