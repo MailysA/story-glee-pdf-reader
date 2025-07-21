@@ -146,7 +146,7 @@ ${safetyPrompt}
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Modèle verrouillé et testé
+        model: 'gpt-4.1-mini-2025-04-14', // Modèle le plus rentable
         messages: [
           {
             role: 'system',
