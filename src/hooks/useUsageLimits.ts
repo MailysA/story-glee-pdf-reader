@@ -3,11 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscription } from "@/hooks/useSubscription";
 
-const FREE_STORY_LIMIT = 10;
+const FREE_STORY_LIMIT = 1; // Limite freemium à 1 histoire
 const PREMIUM_STORY_LIMIT = 30;
-const FREE_DOWNLOAD_LIMIT = 3;
+const FREE_DOWNLOAD_LIMIT = 0; // Pas de téléchargement en freemium
 const PREMIUM_DOWNLOAD_LIMIT = Infinity; // Illimité pour les premium
-const FREE_AUDIO_LIMIT = 5;
+const FREE_AUDIO_LIMIT = 0; // Pas de génération audio en freemium
 const PREMIUM_AUDIO_LIMIT = 30;
 
 interface UsageLimits {
@@ -92,8 +92,8 @@ export const useUsageLimits = () => {
 
       if (!usage.canDownload && !isPremium) {
         toast({
-          title: "Limite atteinte",
-          description: "Vous avez atteint la limite de téléchargements gratuits (3). Passez au premium pour plus !",
+          title: "Fonctionnalité Premium",
+          description: "Le téléchargement est réservé aux utilisateurs Premium. Passez au premium pour débloquer cette fonctionnalité !",
           variant: "destructive",
         });
         return false;
@@ -135,8 +135,8 @@ export const useUsageLimits = () => {
 
       if (!usage.canGenerateAudio && !isPremium) {
         toast({
-          title: "Limite atteinte",
-          description: "Vous avez atteint la limite de générations audio gratuites (5). Passez au premium pour plus !",
+          title: "Fonctionnalité Premium",
+          description: "La génération audio est réservée aux utilisateurs Premium. Passez au premium pour débloquer cette fonctionnalité !",
           variant: "destructive",
         });
         return false;
@@ -178,7 +178,7 @@ export const useUsageLimits = () => {
         title: "Limite atteinte",
         description: isPremium 
           ? `Vous avez créé ${limit} histoires ce mois-ci. Votre limite sera remise à zéro le mois prochain !`
-          : `Vous avez créé ${limit} histoires gratuites. Passez au premium pour continuer !`,
+          : "Vous avez utilisé votre histoire gratuite. Passez au premium pour créer des histoires illimitées !",
         variant: "destructive",
       });
       return false;

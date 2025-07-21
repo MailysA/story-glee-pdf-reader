@@ -28,7 +28,7 @@ export const UsageLimitCard = ({
   // Définir les limites selon l'abonnement
   const getSubscriptionLimits = () => {
     if (!isPremium) {
-      return { stories: 10, downloads: 3, audioGenerations: 5 };
+      return { stories: 1, downloads: 0, audioGenerations: 0 }; // Modèle freemium très limité
     }
     
     switch (subscriptionTier) {
@@ -39,7 +39,7 @@ export const UsageLimitCard = ({
       case 'Enterprise':
         return { stories: -1, downloads: -1, audioGenerations: -1 }; // Illimité
       default:
-        return { stories: 10, downloads: 3, audioGenerations: 5 };
+        return { stories: 1, downloads: 0, audioGenerations: 0 };
     }
   };
 
@@ -91,16 +91,19 @@ export const UsageLimitCard = ({
             <div className="flex items-center gap-2">
               <Download className="w-4 h-4 text-primary" />
               <span>Téléchargements</span>
+              {!isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Premium</span>}
             </div>
             <span className="font-medium">
-              {limits.downloads === -1 ? 'Illimité' : `${downloadsUsed}/${actualDownloadsLimit}`}
+              {limits.downloads === -1 ? 'Illimité' : !isPremium ? 'Bloqué' : `${downloadsUsed}/${actualDownloadsLimit}`}
             </span>
           </div>
-          <Progress value={actualDownloadsPercentage} className="h-2" />
+          <Progress value={!isPremium ? 0 : actualDownloadsPercentage} className="h-2" />
           {limits.downloads === -1 ? (
             <p className="text-xs text-muted-foreground">
               Téléchargements illimités ✨
             </p>
+          ) : !isPremium ? (
+            <p className="text-xs text-amber-600">Fonctionnalité Premium uniquement</p>
           ) : downloadsUsed >= actualDownloadsLimit ? (
             <p className="text-xs text-destructive">Limite atteinte !</p>
           ) : (
@@ -116,16 +119,19 @@ export const UsageLimitCard = ({
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
               <span>Génération audio</span>
+              {!isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Premium</span>}
             </div>
             <span className="font-medium">
-              {limits.audioGenerations === -1 ? 'Illimité' : `${audioGenerationsUsed}/${actualAudioLimit}`}
+              {limits.audioGenerations === -1 ? 'Illimité' : !isPremium ? 'Bloqué' : `${audioGenerationsUsed}/${actualAudioLimit}`}
             </span>
           </div>
-          <Progress value={actualAudioPercentage} className="h-2" />
+          <Progress value={!isPremium ? 0 : actualAudioPercentage} className="h-2" />
           {limits.audioGenerations === -1 ? (
             <p className="text-xs text-muted-foreground">
               Audio illimité ✨
             </p>
+          ) : !isPremium ? (
+            <p className="text-xs text-amber-600">Fonctionnalité Premium uniquement</p>
           ) : audioGenerationsUsed >= actualAudioLimit ? (
             <p className="text-xs text-destructive">Limite atteinte !</p>
           ) : (
@@ -136,7 +142,7 @@ export const UsageLimitCard = ({
         </div>
 
         {/* Bouton Premium */}
-        {!isPremium && (storiesUsed >= actualStoriesLimit || downloadsUsed >= actualDownloadsLimit || audioGenerationsUsed >= actualAudioLimit) && (
+        {!isPremium && (
           <div className="pt-2 border-t">
             <Button
               onClick={onUpgrade}
@@ -144,7 +150,7 @@ export const UsageLimitCard = ({
               size="sm"
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              Passer au Premium
+              Débloquer Premium
             </Button>
             <p className="text-xs text-center text-muted-foreground mt-2">
               Histoires illimitées • Téléchargements illimités • Audio premium
