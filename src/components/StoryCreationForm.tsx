@@ -212,6 +212,22 @@ export function StoryCreationForm() {
       return;
     }
 
+    // Si l'utilisateur n'est pas connecté, proposer authentification ou compte invité
+    if (!isAuthenticated) {
+      const choice = window.confirm(
+        "Pour créer votre histoire, vous pouvez :\n\n" +
+        "• Cliquer OK pour vous connecter/créer un compte et sauvegarder vos histoires\n" +
+        "• Cliquer Annuler pour continuer en mode invité (histoire non sauvegardée)"
+      );
+      
+      if (choice) {
+        // Rediriger vers la page d'authentification
+        window.location.href = "/auth";
+        return;
+      }
+      // Sinon, continuer en mode invité
+    }
+
     // Vérifier les limites seulement si connecté
     if (isAuthenticated && !checkStoryLimit()) {
       return;
