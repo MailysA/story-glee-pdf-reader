@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { useSubscription } from "@/hooks/useSubscription";
+import { StoryGenerationAnimation } from "./StoryGenerationAnimation";
 import { Sparkles, Wand2, Heart, Star, Image, Crown, Search, X, ChevronDown, ChevronUp } from "lucide-react";
 
 const narrativeTones = [
@@ -626,6 +627,13 @@ export function StoryCreationForm() {
         </Button>
       </div>
     </form>
+
+    {/* Animation de génération d'histoire */}
+    <StoryGenerationAnimation 
+      childName={childName}
+      theme={selectedTheme}
+      isVisible={loading}
+    />
     </div>
   );
 }
