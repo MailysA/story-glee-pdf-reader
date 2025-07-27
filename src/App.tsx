@@ -12,7 +12,7 @@ import ResetPassword from "./pages/ResetPasswordPage";
 import AuthCallback from "./pages/AuthCallback";
 import NotFound from "./pages/NotFoundPage";
 import Legal from "./pages/LegalPage";
-import {CGUPage} from "./pages/CGUPage";
+import { CGUPage } from "./pages/CguPage";
 import PublicStoryPage from "./pages/PublicStoryPage";
 import PrivateStoryPage from "./pages/PrivateStoryPage";
 import { Paywall } from "@/pages/PaywallPage";
@@ -51,7 +51,7 @@ const App = () => (
               <Route path="/dashboard/library/:id" element={<PrivateStoryPage />} />
               <Route path="/legal" element={<Legal />} />
               <Route path="/paywall" element={<Paywall />} />
-              <Route path="/cgu" element={<CGUPage />} />
+              <Route path="/cgu" element={<CGUPage isOpen={true} onClose={() => window.history.back()} />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
