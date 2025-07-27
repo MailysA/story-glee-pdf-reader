@@ -52,26 +52,26 @@ export const UsageLimitCard = ({
   const actualAudioPercentage = limits.audioGenerations === -1 ? 0 : (audioGenerationsUsed / actualAudioLimit) * 100;
 
   return (
-    <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Crown className="w-5 h-5 text-primary" />
+    <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20 w-full max-w-full">
+      <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           Votre utilisation
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6 pb-3 sm:pb-6">
         {/* Histoires */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-primary" />
-              <span>Histoires magiques</span>
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+              <span className="truncate">Histoires magiques</span>
             </div>
-            <span className="font-medium">
+            <span className="font-medium text-xs sm:text-sm shrink-0">
               {limits.stories === -1 ? 'Illimité' : `${storiesUsed}/${actualStoriesLimit}`}
             </span>
           </div>
-          <Progress value={actualStoriesPercentage} className="h-2" />
+          <Progress value={actualStoriesPercentage} className="h-1.5 sm:h-2" />
           {limits.stories === -1 ? (
             <p className="text-xs text-muted-foreground">
               Histoires illimitées ✨
@@ -87,17 +87,21 @@ export const UsageLimitCard = ({
 
         {/* Téléchargements */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <Download className="w-4 h-4 text-primary" />
-              <span>Téléchargements</span>
-              {!isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Premium</span>}
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+              <Download className="w-3 h-3 sm:w-4 sm:h-4 text-primary shrink-0" />
+              <span className="truncate">Téléchargements</span>
+              {!isPremium && (
+                <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full shrink-0">
+                  Premium
+                </span>
+              )}
             </div>
-            <span className="font-medium">
+            <span className="font-medium text-xs sm:text-sm shrink-0 ml-2">
               {limits.downloads === -1 ? 'Illimité' : `${downloadsUsed}/${actualDownloadsLimit}`}
             </span>
           </div>
-          <Progress value={actualDownloadsPercentage} className="h-2" />
+          <Progress value={actualDownloadsPercentage} className="h-1.5 sm:h-2" />
           {limits.downloads === -1 ? (
             <p className="text-xs text-muted-foreground">
               Téléchargements illimités ✨
@@ -113,17 +117,21 @@ export const UsageLimitCard = ({
 
         {/* Générations Audio */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span>Génération audio</span>
-              {!isPremium && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Premium</span>}
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-primary shrink-0" />
+              <span className="truncate">Génération audio</span>
+              {!isPremium && (
+                <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full shrink-0">
+                  Premium
+                </span>
+              )}
             </div>
-            <span className="font-medium">
+            <span className="font-medium text-xs sm:text-sm shrink-0 ml-2">
               {limits.audioGenerations === -1 ? 'Illimité' : `${audioGenerationsUsed}/${actualAudioLimit}`}
             </span>
           </div>
-          <Progress value={actualAudioPercentage} className="h-2" />
+          <Progress value={actualAudioPercentage} className="h-1.5 sm:h-2" />
           {limits.audioGenerations === -1 ? (
             <p className="text-xs text-muted-foreground">
               Audio illimité ✨
@@ -137,18 +145,18 @@ export const UsageLimitCard = ({
           )}
         </div>
 
-        {/* Bouton Premium */}
+        {/* Bouton Premium responsive */}
         {!isPremium && (
           <div className="pt-2 border-t">
             <Button
               onClick={onUpgrade}
-              className="w-full bg-gradient-to-r from-primary to-primary-glow"
+              className="w-full bg-gradient-to-r from-primary to-primary-glow text-sm sm:text-base py-2 sm:py-2.5"
               size="sm"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               Débloquer Premium
             </Button>
-            <p className="text-xs text-center text-muted-foreground mt-2">
+            <p className="text-xs text-center text-muted-foreground mt-2 leading-relaxed">
               Histoires illimitées • Téléchargements illimités • Audio premium
             </p>
           </div>

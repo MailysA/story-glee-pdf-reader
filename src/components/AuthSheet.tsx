@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Drawer } from "vaul";
-import Auth from "@/pages/Auth";
+import AuthPage from "@/pages/AuthPage";
 
 interface AuthSheetProps {
   open: boolean;
@@ -25,7 +25,7 @@ export function AuthSheet({ open, onOpenChange, onAuthSuccess }: AuthSheetProps)
           <Drawer.Title className="text-lg font-bold mb-2">Connectez-vous ou créez un compte</Drawer.Title>
         </div>
         <div className="p-6 pt-0">
-          <Auth onAuthSuccess={onAuthSuccess} />
+          <AuthPage onAuthSuccess={onAuthSuccess} />
         </div>
       </Drawer.Content>
     </Drawer.Root>
