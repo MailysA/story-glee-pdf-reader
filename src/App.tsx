@@ -5,13 +5,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/DashboardPage";
 import PublicLibrary from "./pages/PublicLibrary";
 import EmailConfirmation from "./pages/EmailConfirmation";
-import ResetPassword from "./pages/ResetPassword";
+import ResetPassword from "./pages/ResetPasswordPage";
 import AuthCallback from "./pages/AuthCallback";
-import NotFound from "./pages/NotFound";
-import Legal from "./pages/Legal";
+import NotFound from "./pages/NotFoundPage";
+import Legal from "./pages/LegalPage";
+import {CGUPage} from "./pages/CGUPage";
+import PublicStoryPage from "./pages/PublicStoryPage";
+import PrivateStoryPage from "./pages/PrivateStoryPage";
+import { Paywall } from "@/pages/PaywallPage";
 
 const queryClient = new QueryClient();
 
@@ -43,14 +47,14 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/library" element={<PublicLibrary />} />
+              <Route path="/library/:id" element={<PublicStoryPage />} />
+              <Route path="/dashboard/library/:id" element={<PrivateStoryPage />} />
               <Route path="/legal" element={<Legal />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/paywall" element={<Paywall />} />
+              <Route path="/cgu" element={<CGUPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
-          <footer className="w-full text-center py-4 text-xs text-muted-foreground bg-background/80 border-t">
-            <a href="/legal" className="underline hover:text-primary">Mentions légales & confidentialité</a>
-          </footer>
         </div>
       </BrowserRouter>
     </TooltipProvider>

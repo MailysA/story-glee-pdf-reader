@@ -9,6 +9,7 @@ import { BookOpen, Download, Play, Pause, Trash2, Calendar, User, Heart, Filter 
 import { StoryReader } from "./StoryReader";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useUsageLimits } from "@/hooks/useUsageLimits";
+import { useNavigate } from "react-router-dom";
 
 interface Story {
   id: string;
@@ -31,6 +32,7 @@ export function StoryLibrary() {
   
   const { addFavorite, removeFavorite, isFavorite } = useFavorites();
   const { storiesCount, downloadsCount, audioGenerationsCount, incrementDownloads } = useUsageLimits();
+  const navigate = useNavigate();
 
   // Récupérer la liste unique des enfants
   const uniqueChildren = Array.from(new Set(stories.map(story => story.child_name)));
@@ -116,27 +118,8 @@ export function StoryLibrary() {
   };
 
   if (selectedStory) {
-    return (
-      <div>
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="outline"
-            onClick={() => setSelectedStory(null)}
-            className="flex items-center gap-2"
-          >
-            ← Retour à la bibliothèque
-          </Button>
-          <h2 className="text-2xl font-bold">{selectedStory.title}</h2>
-        </div>
-        <StoryReader story={{
-          id: selectedStory.id,
-          title: selectedStory.title,
-          content: selectedStory.story_content,
-          theme: selectedStory.theme,
-          audio_url: selectedStory.audio_url
-        }} />
-      </div>
-    );
+    // On ne gère plus l'affichage inline, navigation via URL
+    return null;
   }
 
   if (loading) {
@@ -253,7 +236,7 @@ export function StoryLibrary() {
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedStory(story);
+                    navigate(`/dashboard/library/${story.id}`);
                   }}
                   className="flex items-center gap-2 flex-1"
                 >

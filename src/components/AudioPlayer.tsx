@@ -52,7 +52,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   const [selectedVoice, setSelectedVoice] = useState("charlie");
   const [backgroundSound, setBackgroundSound] = useState("none");
   const [isLoading, setIsLoading] = useState(false);
-  const [playbackRate, setPlaybackRate] = useState(1);
+  const [playbackRate, setPlaybackRate] = useState(0.75); // narration plus lente par défaut
   const [audioError, setAudioError] = useState<string | null>(null);
   const { isPremium, subscriptionTier, loading: subscriptionLoading } = useSubscription();
   const { incrementAudioGenerations, canGenerateAudio } = useUsageLimits();

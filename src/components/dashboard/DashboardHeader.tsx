@@ -1,5 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DashboardTabs } from "./DashboardTabs";
+import { DashboardTabsMobile } from "./DashboardTabsMobile";
+import { DashboardSettingsButton } from "./DashboardSettingsButton";
 import { Plus, Library, Settings } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import { UserProfile } from "./UserProfile";
@@ -38,86 +39,22 @@ export function DashboardHeader({
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl md:text-2xl font-bold text-foreground">MagicTales</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">Histoires magiques</h1>
           </div>
-          
           <div className="flex items-center gap-2 md:gap-4">
-            <div className="hidden sm:flex bg-muted rounded-lg p-1">
-              <Button
-                variant={activeTab === "create" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onTabChange("create")}
-                className="flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden md:inline">Créer</span>
-              </Button>
-              <Button
-                variant={activeTab === "library" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onTabChange("library")}
-                className="flex items-center gap-2"
-              >
-                <Library className="w-4 h-4" />
-                <span className="hidden md:inline">Bibliothèque</span>
-              </Button>
-            </div>
-            
-            {/* Mobile tabs */}
-            <div className="flex sm:hidden bg-muted rounded-lg p-1">
-              <Button
-                variant={activeTab === "create" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onTabChange("create")}
-                className="px-2"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={activeTab === "library" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onTabChange("library")}
-                className="px-2"
-              >
-                <Library className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="hidden sm:inline">Paramètres</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 mr-4">
-                <div className="space-y-4">
-                  <UserProfile 
-                    user={user} 
-                    isPremium={isPremium} 
-                    subscriptionTier={subscriptionTier} 
-                  />
-                  
-                  <SubscriptionStatus
-                    storiesCount={storiesCount}
-                    downloadsCount={downloadsCount}
-                    isPremium={isPremium}
-                    onUpgrade={onUpgrade}
-                  />
-                  
-                  <AccountManagement
-                    isPremium={isPremium}
-                    onUnsubscribe={onUnsubscribe}
-                    onSignOut={onSignOut}
-                    onDeleteAccount={onDeleteAccount}
-                  />
-                </div>
-              </PopoverContent>
-            </Popover>
+            <DashboardTabs activeTab={activeTab} onTabChange={onTabChange} />
+            <DashboardTabsMobile activeTab={activeTab} onTabChange={onTabChange} />
+            <DashboardSettingsButton
+              user={user}
+              isPremium={isPremium}
+              subscriptionTier={subscriptionTier}
+              storiesCount={storiesCount}
+              downloadsCount={downloadsCount}
+              onUpgrade={onUpgrade}
+              onUnsubscribe={onUnsubscribe}
+              onSignOut={onSignOut}
+              onDeleteAccount={onDeleteAccount}
+            />
           </div>
         </div>
       </div>

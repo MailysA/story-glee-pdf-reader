@@ -89,7 +89,7 @@ export default function EmailConfirmation() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Sparkles className="w-8 h-8 text-primary" />
-            <h1 className="text-4xl font-bold text-white">MagicTales</h1>
+            <h1 className="text-4xl font-bold text-white">Histoires magiques</h1>
             <Heart className="w-8 h-8 text-red-400" />
           </div>
           <p className="text-white/90 text-lg">Confirmation de votre compte</p>

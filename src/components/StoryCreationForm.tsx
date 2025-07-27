@@ -12,6 +12,9 @@ import { useUsageLimits } from "@/hooks/useUsageLimits";
 import { useSubscription } from "@/hooks/useSubscription";
 import { StoryGenerationAnimation } from "./StoryGenerationAnimation";
 import { Sparkles, Wand2, Heart, Star, Image, Crown, Search, X, ChevronDown, ChevronUp } from "lucide-react";
+import { AuthSheet } from "@/components/AuthSheet";
+import { useNavigate, useLocation } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 
 const narrativeTones = [
   { value: "doux", label: "🌸 Doux", description: "Histoires tendres et rassurantes" },
@@ -23,87 +26,6 @@ const narrativeTones = [
   { value: "heroique", label: "🦸‍♂️ Héroïque", description: "Courage et bravoure" },
 ];
 
-const themeCategories = [
-  {
-    name: "Contes & Légendes",
-    icon: "👑",
-    themes: [
-      { value: "conte-de-fees", label: "✨ Conte de Fées", description: "Magie et merveilles", video: "/videos/farytail.mp4" },
-      { value: "princesse", label: "👑 Princesse", description: "Château et royauté", video: "/videos/princess.mp4" },
-      { value: "sorciere", label: "🧙‍♀️ Sorcière", description: "Potions et sortilèges", video: "/videos/witch.mp4" },
-      { value: "fantome", label: "👻 Fantôme", description: "Mystères et frissons", video: "/videos/ghost.mp4" },
-    ]
-  },
-  {
-    name: "Aventures & Exploration",
-    icon: "🗺️",
-    themes: [
-      { value: "aventure", label: "🗺️ Grande Aventure", description: "Exploration et découvertes", video: "/videos/adventure1.mp4" },
-      { value: "aventure-jungle", label: "🌿 Aventure Jungle", description: "Expédition tropicale", video: "/videos/adventure2.mp4" },
-      { value: "pirate", label: "🏴‍☠️ Pirates", description: "Trésors et océans", video: "/videos/pirate.mp4" },
-      { value: "alien", label: "👽 Extraterrestres", description: "Rencontres cosmiques", video: "/videos/alien.mp4" },
-    ]
-  },
-  {
-    name: "Nature & Environnement",
-    icon: "🌱",
-    themes: [
-      { value: "foret", label: "🌲 Forêt", description: "Créatures des bois", video: "/videos/forest1.mp4" },
-      { value: "foret-enchantee", label: "🧚‍♀️ Forêt Enchantée", description: "Magie forestière", video: "/videos/magic-forest.mp4" },
-      { value: "ocean", label: "🌊 Océan", description: "Mystères sous-marins", video: "/videos/ocean.mp4" },
-      { value: "banquise", label: "🐧 Banquise", description: "Aventures polaires", video: "/videos/banquise.mp4" },
-      { value: "environnement", label: "🌍 Environnement", description: "Protection de la nature", video: "/videos/environment.mp4" },
-    ]
-  },
-  {
-    name: "Histoire & Époques",
-    icon: "🏛️",
-    themes: [
-      { value: "egypte", label: "🏺 Égypte Antique", description: "Pharaons et pyramides", video: "/videos/egypte.mp4" },
-      { value: "moyen-age", label: "🏰 Moyen Âge", description: "Chevaliers et châteaux", video: "/videos/moyen-age.mp4" },
-      { value: "renaissance", label: "🎨 Renaissance", description: "Art et inventions", video: "/videos/renaissance.mp4" },
-      { value: "revolution", label: "⚔️ Révolution", description: "Grands changements", video: "/videos/revolution.mp4" },
-    ]
-  },
-  {
-    name: "Sciences & Découvertes",
-    icon: "🔬",
-    themes: [
-      { value: "dinosaures", label: "🦕 Dinosaures", description: "Préhistoire et géants", video: "/videos/dinosaures.mp4" },
-      { value: "robots", label: "🤖 Robots", description: "Technologie du futur", video: "/videos/robots.mp4" },
-      { value: "industriel", label: "🏭 Industrie", description: "Machines et innovations", video: "/videos/industriel.mp4" },
-    ]
-  },
-  {
-    name: "Apprentissage",
-    icon: "📚",
-    themes: [
-      { value: "alphabet", label: "🔤 Alphabet", description: "Lettres et mots", video: "/videos/alphabet.mp4" },
-      { value: "nombres", label: "🔢 Nombres", description: "Mathématiques amusantes", video: "/videos/numbers.mp4" },
-      { value: "logique", label: "🧩 Logique", description: "Énigmes et réflexion", video: "/videos/logic.mp4" },
-      { value: "emotions", label: "❤️ Émotions", description: "Sentiments et empathie", video: "/videos/emotions.mp4" },
-    ]
-  },
-  {
-    name: "Valeurs & Société",
-    icon: "🤝",
-    themes: [
-      { value: "respect", label: "🤝 Respect", description: "Vivre ensemble", video: "/videos/respect.mp4" },
-      { value: "bonnes-manieres", label: "🎩 Bonnes Manières", description: "Politesse et savoir-vivre", video: "/videos/goodmaners.mp4" },
-      { value: "recyclage", label: "♻️ Recyclage", description: "Prendre soin de la planète", video: "/videos/recycling.mp4" },
-    ]
-  },
-  {
-    name: "Divertissement",
-    icon: "🎪",
-    themes: [
-      { value: "cirque", label: "🎪 Cirque", description: "Spectacle et acrobaties", video: "/videos/circus.mp4" },
-      { value: "bonbons", label: "🍭 Bonbons", description: "Sucreries magiques", video: "/videos/candys.mp4" },
-      { value: "maison-magique", label: "🏠 Maison Magique", description: "Mystères domestiques", video: "/videos/magic-house.mp4" },
-    ]
-  }
-];
-
 export function StoryCreationForm() {
   const [childName, setChildName] = useState("");
   const [childAge, setChildAge] = useState("");
@@ -112,12 +34,36 @@ export function StoryCreationForm() {
   const [customDetails, setCustomDetails] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchTheme, setSearchTheme] = useState("");
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(themeCategories.map(cat => cat.name)));
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [toneSectionCollapsed, setToneSectionCollapsed] = useState(true);
   const { checkStoryLimit, refreshUsage } = useUsageLimits();
   const { isPremium, refreshSubscription, subscriptionTier } = useSubscription();
+  const [showAuthSheet, setShowAuthSheet] = useState(false);
+  const [pendingStory, setPendingStory] = useState<any>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [themeCategories, setThemeCategories] = useState<any[]>([]);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [themesLoading, setThemesLoading] = useState(true);
+
+  // Charger dynamiquement les catégories/thèmes depuis Supabase
+  useEffect(() => {
+    setThemesLoading(true);
+    fetch('/functions/v1/get-theme-categories')
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Erreur lors du chargement des thèmes");
+        return res.json();
+      })
+      .then((data) => {
+        setThemeCategories(data || []);
+        setThemesLoading(false);
+      })
+      .catch(() => {
+        setThemeCategories([]);
+        setThemesLoading(false);
+      });
+  }, []);
 
   // Filtrage des thèmes basé sur la recherche
   const filteredCategories = useMemo(() => {
@@ -126,13 +72,13 @@ export function StoryCreationForm() {
     return themeCategories
       .map(category => ({
         ...category,
-        themes: category.themes.filter(theme =>
+        themes: (category.themes || []).filter(theme =>
           theme.label.toLowerCase().includes(searchTheme.toLowerCase()) ||
           theme.description.toLowerCase().includes(searchTheme.toLowerCase())
         )
       }))
       .filter(category => category.themes.length > 0);
-  }, [searchTheme]);
+  }, [searchTheme, themeCategories]);
 
   // Fonction pour plier/déplier les catégories
   const toggleCategory = (categoryName: string) => {
@@ -201,6 +147,30 @@ export function StoryCreationForm() {
   // Remove the refresh subscription on mount to prevent infinite loops
   // The subscription status is already managed by the useSubscription hook
 
+  // Auto-génération après login si pendingStory existe
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.get('autocreate') === '1') {
+      const pending = sessionStorage.getItem('pendingStory');
+      if (pending) {
+        try {
+          const data = JSON.parse(pending);
+          setChildName(data.childName || "");
+          setChildAge(data.childAge || "");
+          setSelectedTheme(data.selectedTheme || "");
+          setNarrativeTone(data.narrativeTone || "");
+          setCustomDetails(data.customDetails || "");
+          // Déclencher la génération automatiquement
+          setTimeout(() => {
+            const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+            handleSubmit(fakeEvent);
+            sessionStorage.removeItem('pendingStory');
+          }, 300);
+        } catch {}
+      }
+    }
+  }, [location.search]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -213,33 +183,29 @@ export function StoryCreationForm() {
       return;
     }
 
-    // Si l'utilisateur n'est pas connecté, proposer authentification ou compte invité
+    // Si l'utilisateur n'est pas connecté, rediriger vers /auth
     if (!isAuthenticated) {
-      const choice = window.confirm(
-        "Pour créer votre histoire, vous pouvez :\n\n" +
-        "• Cliquer OK pour vous connecter/créer un compte et sauvegarder vos histoires\n" +
-        "• Cliquer Annuler pour continuer en mode invité (histoire non sauvegardée)"
-      );
-      
-      if (choice) {
-        // Rediriger vers la page d'authentification
-        window.location.href = "/auth";
-        return;
-      }
-      // Sinon, continuer en mode invité
+      // Sauvegarder le contexte du formulaire
+      sessionStorage.setItem('pendingStory', JSON.stringify({
+        childName,
+        childAge,
+        selectedTheme,
+        narrativeTone,
+        customDetails
+      }));
+      navigate("/auth");
+      return;
     }
 
     // Vérifier les limites seulement si connecté
-    if (isAuthenticated && !checkStoryLimit()) {
+    if (!checkStoryLimit()) {
       return;
     }
 
     setLoading(true);
 
     try {
-      // Obtenir l'utilisateur actuel (peut être null en mode hors ligne)
       const { data: { user } } = await supabase.auth.getUser();
-
       // Generate AI story
       const { data: storyData, error: storyError } = await supabase.functions.invoke('generate-story', {
         body: {
@@ -250,45 +216,43 @@ export function StoryCreationForm() {
           customDetails
         }
       });
-
       if (storyError) throw storyError;
       if (!storyData?.story) throw new Error("Erreur lors de la génération de l'histoire");
-
-      // No illustration generation - using video themes instead
-
-      // Save story to database only if user is authenticated
-      if (user) {
-        const { error } = await supabase
-          .from("stories")
-          .insert({
-            user_id: user.id,
-            title: storyData.title || `L'aventure de ${childName}`,
-            theme: selectedTheme,
-            child_name: childName,
-            child_age: parseInt(childAge),
-            story_content: storyData.story,
-          });
-
-        if (error) throw error;
-        
-        // Refresh usage data only if authenticated
-        await refreshUsage();
+      // Générer l'illustration si besoin (optionnel)
+      let illustrationUrl = null;
+      if (storyData.illustration_url) {
+        illustrationUrl = storyData.illustration_url;
       }
-
+      // Générer l'audio et uploader (optionnel, ou laisser la page de lecture le faire)
+      // Enregistrer l'histoire en base (toujours, même en mode invité)
+      const storyId = uuidv4();
+      const { error: insertError } = await supabase
+        .from("stories")
+        .insert({
+          id: storyId,
+          user_id: user.id,
+          title: storyData.title || `L'aventure de ${childName}`,
+          theme: selectedTheme,
+          child_name: childName,
+          child_age: parseInt(childAge),
+          story_content: storyData.story,
+          illustration_url: illustrationUrl,
+          audio_url: null, // sera généré à la lecture si besoin
+          is_public: false,
+          created_at: new Date().toISOString(),
+        });
+      if (insertError) throw insertError;
+      await refreshUsage();
       toast({
         title: "Histoire créée!",
-        description: user 
-          ? "Votre histoire magique a été générée et sauvegardée."
-          : "Votre histoire magique a été générée (mode hors ligne).",
+        description: "Votre histoire magique a été générée et sauvegardée.",
       });
-
       // Reset form
       setChildName("");
       setChildAge("");
       setSelectedTheme("");
       setNarrativeTone("");
       setCustomDetails("");
-
     } catch (error: any) {
       console.error("Erreur complète:", error);
       toast({
@@ -299,6 +263,31 @@ export function StoryCreationForm() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Callback après connexion réussie
+  const handleAuthSuccess = () => {
+    setShowAuthSheet(false);
+    if (pendingStory) {
+      // Relancer la génération avec le contexte sauvegardé
+      setTimeout(() => {
+        // Remettre les valeurs dans le formulaire si besoin
+        setChildName(pendingStory.childName);
+        setChildAge(pendingStory.childAge);
+        setSelectedTheme(pendingStory.selectedTheme);
+        setNarrativeTone(pendingStory.narrativeTone);
+        setCustomDetails(pendingStory.customDetails);
+        // Appeler handleSubmit à nouveau
+        handleSubmit(new Event('submit') as any);
+        setPendingStory(null);
+      }, 100);
+    }
+  };
+
+  // Callback accès invité
+  const handleGuestAccess = () => {
+    setShowAuthSheet(false);
+    navigate("/dashboard");
   };
 
   // Affichage pendant le chargement de l'authentification
@@ -313,10 +302,22 @@ export function StoryCreationForm() {
     );
   }
 
+  // Affichage pendant le chargement des thèmes
+  if (themesLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <Sparkles className="w-8 h-8 text-primary animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Chargement des thèmes...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Mode hors ligne autorisé - ne plus bloquer l'accès
 
   return (
-    <div className="space-y-6">
+    <>
       {/* Indicateur de mode de connexion */}
       <div className="flex justify-center">
         <Badge 
@@ -634,6 +635,12 @@ export function StoryCreationForm() {
       theme={selectedTheme}
       isVisible={loading}
     />
-    </div>
+    {/* Drawer d'authentification */}
+    {/* <AuthSheet
+      open={showAuthSheet}
+      onOpenChange={setShowAuthSheet}
+      onAuthSuccess={handleAuthSuccess}
+    /> */}
+    </>
   );
 }

@@ -9,7 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, Heart, Star } from "lucide-react";
 
-export default function Auth() {
+interface AuthProps {
+  onAuthSuccess?: () => void;
+}
+
+export default function Auth({ onAuthSuccess }: AuthProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -31,11 +35,17 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session && mode !== 'reset') {
-        navigate("/dashboard");
+        if (onAuthSuccess) onAuthSuccess();
+        // Rediriger selon pendingStory
+        if (sessionStorage.getItem('pendingStory')) {
+          navigate("/dashboard?autocreate=1");
+        } else {
+          navigate("/dashboard");
+        }
       }
     };
     checkUser();
-  }, [navigate]);
+  }, [navigate, onAuthSuccess]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,8 +82,13 @@ export default function Auth() {
 
       if (error) throw error;
 
-      // Rediriger vers la page de confirmation d'email
-      navigate(`/email-confirmation?email=${encodeURIComponent(email)}`);
+      if (onAuthSuccess) onAuthSuccess();
+      // Rediriger selon pendingStory
+      if (sessionStorage.getItem('pendingStory')) {
+        navigate("/dashboard?autocreate=1");
+      } else {
+        navigate(`/email-confirmation?email=${encodeURIComponent(email)}`);
+      }
       
       toast({
         title: "Compte créé avec succès!",
@@ -102,7 +117,13 @@ export default function Auth() {
 
       if (error) throw error;
 
-      navigate("/dashboard");
+      if (onAuthSuccess) onAuthSuccess();
+      // Rediriger selon pendingStory
+      if (sessionStorage.getItem('pendingStory')) {
+        navigate("/dashboard?autocreate=1");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error: any) {
       toast({
         title: "Erreur de connexion",

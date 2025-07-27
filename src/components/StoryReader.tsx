@@ -32,6 +32,7 @@ interface StoryReaderProps {
     content: string;
     theme: string;
     audio_url?: string;
+    illustration_url?: string;
   };
 }
 
@@ -174,23 +175,18 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
                   </p>
                 </div>
 
-                {/* Video Side - Only for first page */}
+                {/* Illustration Side (affichée sur toutes les pages) */}
                 <div className="flex items-center justify-center">
-                  {currentPage === 0 ? (
-                    <video 
-                      src={getThemeVideo(story.theme)} 
-                      autoPlay
-                      loop
-                      muted
-                      className="max-w-full h-auto rounded-lg shadow-lg max-h-80"
+                  {story.illustration_url ? (
+                    <img
+                      src={story.illustration_url}
+                      alt="Illustration de l'histoire"
+                      className="max-w-full h-auto rounded-lg shadow-lg max-h-80 object-contain"
                     />
                   ) : (
-                    // Empty space for other pages
-                    <div className="w-64 h-64 flex items-center justify-center">
-                      <div className="text-center text-muted-foreground">
-                        <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Page {currentPage + 1}</p>
-                      </div>
+                    <div className="w-64 h-64 flex items-center justify-center bg-muted/20 rounded-lg">
+                      <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm text-muted-foreground">Pas d'illustration</p>
                     </div>
                   )}
                 </div>
