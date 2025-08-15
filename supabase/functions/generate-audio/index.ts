@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,11 +13,21 @@ serve(async (req) => {
   }
 
   try {
-    const { text, voice = 'sarah', model = 'eleven_multilingual_v2' } = await req.json()
+    const { text, voice = 'sarah', model = 'eleven_multilingual_v2', storyId, userId } = await req.json()
 
     if (!text) {
       throw new Error('Text is required')
     }
+
+    if (!storyId || !userId) {
+      throw new Error('Story ID and User ID are required')
+    }
+
+    // Initialize Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
 
     // Voice mapping to ElevenLabs voice IDs
     const voiceMapping: Record<string, string> = {
@@ -54,23 +65,48 @@ serve(async (req) => {
       throw new Error(`ElevenLabs API error: ${response.status}`)
     }
 
-    // Convert audio to base64 in chunks to avoid stack overflow
+    // Store audio file in Supabase Storage
     const arrayBuffer = await response.arrayBuffer()
-    const uint8Array = new Uint8Array(arrayBuffer)
+    const audioPath = `${userId}/${storyId}.mp3`
     
-    // Process in chunks to avoid call stack overflow
-    let binaryString = ''
-    const chunkSize = 8192 // 8KB chunks
-    
-    for (let i = 0; i < uint8Array.length; i += chunkSize) {
-      const chunk = uint8Array.slice(i, i + chunkSize)
-      binaryString += String.fromCharCode(...chunk)
+    const { error: uploadError } = await supabase.storage
+      .from('story-audio')
+      .upload(audioPath, arrayBuffer, {
+        contentType: 'audio/mpeg',
+        upsert: true
+      })
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError)
+      throw new Error('Failed to upload audio file')
     }
-    
-    const base64Audio = btoa(binaryString)
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('story-audio')
+      .getPublicUrl(audioPath)
+
+    const audioUrl = urlData.publicUrl
+
+    // Update story with audio URL in database
+    const { error: updateError } = await supabase
+      .from('stories')
+      .update({ audio_url: audioUrl })
+      .eq('id', storyId)
+      .eq('user_id', userId)
+
+    if (updateError) {
+      console.error('Error updating story with audio URL:', updateError)
+      throw new Error('Failed to update story with audio URL')
+    }
+
+    console.log('Audio generated and story updated successfully:', audioUrl)
 
     return new Response(
-      JSON.stringify({ audioContent: base64Audio }),
+      JSON.stringify({ 
+        audioUrl,
+        message: 'Audio generated and uploaded successfully'
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }

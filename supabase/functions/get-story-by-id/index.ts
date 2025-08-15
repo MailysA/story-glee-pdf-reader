@@ -30,9 +30,10 @@ serve(async (req) => {
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // First try to get as public story, then as private if authenticated
     const { data, error } = await supabase
       .from('stories')
       .select('*')

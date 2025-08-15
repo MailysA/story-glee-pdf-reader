@@ -81,7 +81,9 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
         body: { 
           text,
           voice,
-          model: 'eleven_multilingual_v2'
+          model: 'eleven_multilingual_v2',
+          storyId: story.id,
+          userId: (await supabase.auth.getUser()).data.user?.id
         }
       });
 
@@ -90,15 +92,10 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
         throw new Error(`Erreur serveur: ${error.message}`);
       }
 
-      if (data?.audioContent) {
-        const audioBlob = new Blob(
-          [Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))],
-          { type: 'audio/mpeg' }
-        );
-        const audioUrl = URL.createObjectURL(audioBlob);
-        
+      if (data?.audioUrl) {
+        // Utiliser l'URL stockée dans Supabase Storage
         if (audioRef.current) {
-          audioRef.current.src = audioUrl;
+          audioRef.current.src = data.audioUrl;
           audioRef.current.load();
         }
         
@@ -107,9 +104,9 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
           await incrementAudioGenerations();
         }
         
-        console.log("Audio généré avec succès");
+        console.log("Audio généré avec succès et stocké:", data.audioUrl);
       } else {
-        throw new Error("Aucun contenu audio reçu du serveur");
+        throw new Error("Aucune URL audio reçue du serveur");
       }
     } catch (error: any) {
       console.error("Erreur génération audio:", error);
