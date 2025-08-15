@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      audio_effects: {
+        Row: {
+          created_at: string
+          effect_id: string
+          file_url: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effect_id: string
+          file_url: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effect_id?: string
+          file_url?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      audio_voices: {
+        Row: {
+          created_at: string
+          description: string
+          elevenlabs_id: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          voice_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          elevenlabs_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          voice_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          elevenlabs_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          voice_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           child_age: number | null

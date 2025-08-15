@@ -22,26 +22,17 @@ interface AudioPlayerProps {
 }
 
 interface Voice {
-  id: string;
+  voice_id: string;
   name: string;
   description: string;
+  elevenlabs_id: string;
 }
 
-const AVAILABLE_VOICES: Voice[] = [
-  { id: "sarah", name: "Sarah", description: "Voix douce et maternelle" },
-  { id: "laura", name: "Laura", description: "Voix énergique et joyeuse" },
-  { id: "charlie", name: "Charlie", description: "Voix grave et apaisante" },
-  { id: "aria", name: "Aria", description: "Voix claire et expressive" },
-];
-
-const SOUND_EFFECTS = [
-  { id: "birds", name: "Oiseaux de la forêt", url: "/sounds/birds.mp3" },
-  { id: "rain", name: "Pluie apaisante", url: "/sounds/rain.mp3" },
-  { id: "seagull", name: "Mouettes océaniques", url: "/sounds/seagull.mp3" },
-  { id: "page-flip", name: "Tournage de pages", url: "/sounds/page-flip.mp3" },
-  { id: "laugh", name: "Rires joyeux", url: "/sounds/laught.mp3" },
-  { id: "none", name: "Aucun", url: "" },
-];
+interface SoundEffect {
+  effect_id: string;
+  name: string;
+  file_url: string;
+}
 
 export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -54,11 +45,44 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(0.75); // narration plus lente par défaut
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<Voice[]>([]);
+  const [soundEffects, setSoundEffects] = useState<SoundEffect[]>([]);
   const { isPremium, subscriptionTier, loading: subscriptionLoading } = useSubscription();
   const { incrementAudioGenerations, canGenerateAudio } = useUsageLimits();
 
   const audioRef = useRef<HTMLAudioElement>(null);
   const backgroundAudioRef = useRef<HTMLAudioElement>(null);
+
+  // Charger les voix et effets sonores depuis la base de données
+  useEffect(() => {
+    const loadAudioData = async () => {
+      try {
+        // Charger les voix
+        const { data: voices, error: voicesError } = await supabase
+          .from('audio_voices')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
+
+        if (voicesError) throw voicesError;
+        if (voices) setAvailableVoices(voices);
+
+        // Charger les effets sonores
+        const { data: effects, error: effectsError } = await supabase
+          .from('audio_effects')
+          .select('*')
+          .eq('is_active', true)
+          .order('name');
+
+        if (effectsError) throw effectsError;
+        if (effects) setSoundEffects(effects);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données audio:', error);
+      }
+    };
+
+    loadAudioData();
+  }, []);
 
   const generateAudio = async (text: string, voice: string) => {
     // Vérifier les limites avant de générer
@@ -274,7 +298,7 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
       
       toast({
         title: "Voix changée",
-        description: `Narration avec ${AVAILABLE_VOICES.find(v => v.id === voiceId)?.name} activée`,
+        description: `Narration avec ${availableVoices.find(v => v.voice_id === voiceId)?.name} activée`,
       });
       
     } catch (error) {
@@ -304,9 +328,9 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
     }
     
     if (soundId !== "none") {
-      const sound = SOUND_EFFECTS.find(s => s.id === soundId);
+      const sound = soundEffects.find(s => s.effect_id === soundId);
       if (sound && backgroundAudioRef.current) {
-        backgroundAudioRef.current.src = sound.url;
+        backgroundAudioRef.current.src = sound.file_url;
         backgroundAudioRef.current.loop = true;
         backgroundAudioRef.current.onerror = () => {
           console.log(`Fichier audio ${sound.name} non trouvé`);
@@ -462,8 +486,8 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {AVAILABLE_VOICES.map((voice) => (
-                  <SelectItem key={voice.id} value={voice.id}>
+                {availableVoices.map((voice) => (
+                  <SelectItem key={voice.voice_id} value={voice.voice_id}>
                     <div>
                       <div className="font-medium">{voice.name}</div>
                       <div className="text-xs text-muted-foreground">{voice.description}</div>
@@ -493,8 +517,8 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SOUND_EFFECTS.map((sound) => (
-                  <SelectItem key={sound.id} value={sound.id}>
+                {soundEffects.map((sound) => (
+                  <SelectItem key={sound.effect_id} value={sound.effect_id}>
                     {sound.name}
                   </SelectItem>
                 ))}

@@ -29,15 +29,30 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Voice mapping to ElevenLabs voice IDs
-    const voiceMapping: Record<string, string> = {
-      'sarah': 'EXAVITQu4vr4xnSDxMaL',
-      'laura': 'FGY2WhTYpPnrIDTdsKH5', 
-      'charlie': 'IKne3meq5aSn9XLyUdCD',
-      'aria': '9BWtsMINqrJLrRacOk9x',
-    }
+    // Get voice ID from database
+    const { data: voiceData, error: voiceError } = await supabase
+      .from('audio_voices')
+      .select('elevenlabs_id')
+      .eq('voice_id', voice)
+      .eq('is_active', true)
+      .single()
 
-    const voiceId = voiceMapping[voice] || voiceMapping['sarah']
+    let voiceId: string
+    
+    if (voiceError || !voiceData) {
+      console.error('Voice not found:', voice, voiceError)
+      // Fallback to default voice (charlie)
+      const { data: defaultVoice } = await supabase
+        .from('audio_voices')
+        .select('elevenlabs_id')
+        .eq('voice_id', 'charlie')
+        .eq('is_active', true)
+        .single()
+      
+      voiceId = defaultVoice?.elevenlabs_id || 'IKne3meq5aSn9XLyUdCD'
+    } else {
+      voiceId = voiceData.elevenlabs_id
+    }
 
     // Use ElevenLabs API
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
