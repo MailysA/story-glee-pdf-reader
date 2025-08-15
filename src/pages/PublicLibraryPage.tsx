@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, Star, Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function PublicLibrary() {
   const navigate = useNavigate();
@@ -13,22 +14,29 @@ export default function PublicLibrary() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    fetch("/functions/v1/get-public-stories")
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Erreur lors du chargement des histoires publiques.");
-        return res.json();
-      })
-      .then((data) => {
+    const fetchPublicStories = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('get-public-stories');
+        
+        if (error) {
+          console.error('Erreur edge function:', error);
+          throw new Error("Erreur lors du chargement des histoires publiques.");
+        }
+        
+        console.log('Données reçues:', data);
         setPublicStories(data || []);
         setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
+        console.error('Erreur fetch:', err);
         setError("Erreur lors du chargement des histoires publiques.");
         setPublicStories([]);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchPublicStories();
   }, []);
 
   if (loading) {
