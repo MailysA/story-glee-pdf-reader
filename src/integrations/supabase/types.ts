@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -55,6 +55,7 @@ export type Database = {
           created_at: string
           id: string
           illustration_url: string | null
+          is_public: boolean
           story_content: string
           theme: string
           title: string
@@ -68,6 +69,7 @@ export type Database = {
           created_at?: string
           id?: string
           illustration_url?: string | null
+          is_public?: boolean
           story_content: string
           theme: string
           title: string
@@ -81,6 +83,7 @@ export type Database = {
           created_at?: string
           id?: string
           illustration_url?: string | null
+          is_public?: boolean
           story_content?: string
           theme?: string
           title?: string
@@ -189,6 +192,54 @@ export type Database = {
           subscription_tier?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          child_age: number | null
+          child_name: string | null
+          created_at: string
+          email: string
+          favorite_themes: string[] | null
+          id: string
+          parent_email: string | null
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          child_age?: number | null
+          child_name?: string | null
+          created_at?: string
+          email: string
+          favorite_themes?: string[] | null
+          id?: string
+          parent_email?: string | null
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          child_age?: number | null
+          child_name?: string | null
+          created_at?: string
+          email?: string
+          favorite_themes?: string[] | null
+          id?: string
+          parent_email?: string | null
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

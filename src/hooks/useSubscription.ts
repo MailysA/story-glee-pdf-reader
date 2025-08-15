@@ -33,24 +33,24 @@ export const useSubscription = () => {
       // Temporarily skip edge function and use local data only to prevent infinite loop
       console.log('Checking subscription using local data only (edge function disabled)');
       
-      const { data: subscriberData } = await supabase
-        .from('subscribers')
+      const { data: userProfileData } = await supabase
+        .from('user_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       setSubscription({
-        isPremium: subscriberData?.subscribed || false,
-        subscriptionTier: subscriberData?.subscription_tier || null,
-        subscriptionEnd: subscriberData?.subscription_end || null,
+        isPremium: userProfileData?.subscribed || false,
+        subscriptionTier: userProfileData?.subscription_tier || null,
+        subscriptionEnd: userProfileData?.subscription_end || null,
         loading: false
       });
 
-      if (showToast && subscriberData?.subscribed) {
+      if (showToast && userProfileData?.subscribed) {
         const { toast } = await import("@/hooks/use-toast");
         toast({
           title: "Abonnement vérifié",
-          description: `Votre plan ${subscriberData.subscription_tier} est actif.`,
+          description: `Votre plan ${userProfileData.subscription_tier} est actif.`,
         });
       }
     } catch (error) {

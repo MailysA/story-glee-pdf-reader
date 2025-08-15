@@ -1,5 +1,7 @@
 import { User } from "@supabase/supabase-js";
 import { Crown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfileProps {
   user: User | null;
@@ -8,6 +10,24 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ user, isPremium, subscriptionTier }: UserProfileProps) {
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      setProfile(data);
+    };
+
+    fetchProfile();
+  }, [user]);
+
   // Protection contre les objets user null
   if (!user) {
     return (
@@ -40,7 +60,7 @@ export function UserProfile({ user, isPremium, subscriptionTier }: UserProfilePr
               </div>
               <div>
                 <div className="text-sm font-medium">Plan {subscriptionTier}</div>
-                <div className="text-xs text-muted-foreground">{user?.email || "Email non disponible"}</div>
+                <div className="text-xs text-muted-foreground">{profile?.email || user?.email || "Email non disponible"}</div>
               </div>
             </>
           ) : (
@@ -50,7 +70,7 @@ export function UserProfile({ user, isPremium, subscriptionTier }: UserProfilePr
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-500">Plan Gratuit</div>
-                <div className="text-xs text-muted-foreground">{user?.email || "Email non disponible"}</div>
+                <div className="text-xs text-muted-foreground">{profile?.email || user?.email || "Email non disponible"}</div>
               </div>
             </>
           )}

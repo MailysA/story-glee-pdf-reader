@@ -115,7 +115,7 @@ export default function Dashboard() {
     try {
       // Delete user data first
       const { error: profileError } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .delete()
         .eq('user_id', user?.id);
 
