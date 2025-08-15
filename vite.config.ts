@@ -12,6 +12,13 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      '/functions': {
+        target: 'https://eczbwgkebhckysgrqfdg.supabase.co',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   plugins: [
     react(),
