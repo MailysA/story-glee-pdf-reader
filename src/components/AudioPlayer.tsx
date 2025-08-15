@@ -85,11 +85,11 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   }, []);
 
   const generateAudio = async (text: string, voice: string) => {
-    // Vérifier les limites avant de générer
-    if (!isPremium && !canGenerateAudio) {
+    // Vérifier les limites avant de générer seulement si pas d'audio existant
+    if (!story.audio_url && !isPremium && !canGenerateAudio) {
       toast({
         title: "Limite atteinte",
-        description: "Vous avez atteint la limite de générations audio gratuites (5). Passez au premium pour plus !",
+        description: "Vous avez atteint la limite de générations audio gratuites (1). Passez au premium pour plus !",
         variant: "destructive",
       });
       return;
@@ -163,12 +163,21 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   const togglePlay = async () => {
     console.log("Toggle play - État actuel:", { 
       hasAudioSrc: !!audioRef.current?.src, 
+      hasStoryAudioUrl: !!story.audio_url,
       isLoading, 
       audioError 
     });
 
-    if (!audioRef.current?.src && !isLoading && !audioError) {
-      // Générer l'audio si pas encore fait
+    // Si l'histoire a déjà un audio_url, l'utiliser directement (lecture illimitée)
+    if (story.audio_url && !audioRef.current?.src) {
+      console.log("Utilisation de l'audio stocké:", story.audio_url);
+      if (audioRef.current) {
+        audioRef.current.src = story.audio_url;
+        audioRef.current.load();
+      }
+    }
+    // Sinon, générer l'audio si pas encore fait
+    else if (!audioRef.current?.src && !story.audio_url && !isLoading && !audioError) {
       await generateAudio(story.content, selectedVoice);
     }
 

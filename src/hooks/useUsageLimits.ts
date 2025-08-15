@@ -45,10 +45,13 @@ export const useUsageLimits = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Mailys a des limites illimitées
+      const isMailys = user.email === "mailys.airouche@gmail.com";
+
       // Définir les limites basées sur le statut premium
-      const storyLimit = isPremium ? PREMIUM_STORY_LIMIT : FREE_STORY_LIMIT;
-      const downloadLimit = isPremium ? PREMIUM_DOWNLOAD_LIMIT : FREE_DOWNLOAD_LIMIT;
-      const audioLimit = isPremium ? PREMIUM_AUDIO_LIMIT : FREE_AUDIO_LIMIT;
+      const storyLimit = isPremium || isMailys ? PREMIUM_STORY_LIMIT : FREE_STORY_LIMIT;
+      const downloadLimit = isPremium || isMailys ? PREMIUM_DOWNLOAD_LIMIT : FREE_DOWNLOAD_LIMIT;
+      const audioLimit = isPremium || isMailys ? PREMIUM_AUDIO_LIMIT : FREE_AUDIO_LIMIT;
 
       // Compter les histoires créées
       const { count: storiesCount } = await supabase
@@ -71,12 +74,12 @@ export const useUsageLimits = () => {
         storiesCount: actualStoriesCount,
         downloadsCount,
         audioGenerationsCount,
-        canCreateStory: isPremium || actualStoriesCount < storyLimit,
-        canDownload: isPremium || downloadsCount < downloadLimit,
-        canGenerateAudio: isPremium || audioGenerationsCount < audioLimit,
-        storiesRemaining: isPremium ? Infinity : Math.max(0, storyLimit - actualStoriesCount),
-        downloadsRemaining: isPremium ? Infinity : Math.max(0, downloadLimit - downloadsCount),
-        audioGenerationsRemaining: isPremium ? Infinity : Math.max(0, audioLimit - audioGenerationsCount),
+        canCreateStory: isPremium || isMailys || actualStoriesCount < storyLimit,
+        canDownload: isPremium || isMailys || downloadsCount < downloadLimit,
+        canGenerateAudio: isPremium || isMailys || audioGenerationsCount < audioLimit,
+        storiesRemaining: isPremium || isMailys ? Infinity : Math.max(0, storyLimit - actualStoriesCount),
+        downloadsRemaining: isPremium || isMailys ? Infinity : Math.max(0, downloadLimit - downloadsCount),
+        audioGenerationsRemaining: isPremium || isMailys ? Infinity : Math.max(0, audioLimit - audioGenerationsCount),
         isLoading: false,
       });
     } catch (error) {
@@ -132,6 +135,11 @@ export const useUsageLimits = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
+
+      // Mailys peut générer autant d'audios qu'elle veut
+      if (user.email === "mailys.airouche@gmail.com") {
+        return true;
+      }
 
       if (!usage.canGenerateAudio && !isPremium) {
         toast({
