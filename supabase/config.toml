@@ -2,3 +2,6 @@ project_id = "eczbwgkebhckysgrqfdg"
 
 [functions.get-public-stories]
 verify_jwt = false
+
+[functions.get-story-by-id]
+verify_jwt = false
