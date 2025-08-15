@@ -1,10 +1,13 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { StoryReader } from "@/components/StoryReader";
 import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function PublicStoryPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [story, setStory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +40,19 @@ export default function PublicStoryPage() {
 
   return (
     <div className="min-h-screen">
+      {/* Bouton de retour */}
+      <div className="absolute top-4 left-4 z-50">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/library")}
+          className="flex items-center gap-2 bg-background/80 backdrop-blur-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Retour
+        </Button>
+      </div>
+      
       <StoryReader story={{
         id: story.id,
         title: story.title,
