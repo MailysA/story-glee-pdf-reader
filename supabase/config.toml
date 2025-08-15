@@ -1,1 +1,4 @@
 project_id = "eczbwgkebhckysgrqfdg"
+
+[functions.get-public-stories]
+verify_jwt = false
