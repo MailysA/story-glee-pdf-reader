@@ -4,6 +4,7 @@ import { StoryReader } from "@/components/StoryReader";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function PrivateStoryPage() {
   const { id } = useParams();
@@ -52,8 +53,10 @@ export default function PrivateStoryPage() {
 
   return (
     <div className="min-h-screen">
+      <AppHeader title="Lecture d'histoire" variant="minimal" />
+      
       {/* Bouton de retour */}
-      <div className="absolute top-4 left-4 z-50">
+      <div className="absolute top-20 left-4 z-50">
         <Button
           variant="outline"
           size="sm"
