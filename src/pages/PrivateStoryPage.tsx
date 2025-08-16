@@ -35,7 +35,19 @@ export default function PrivateStoryPage() {
     return <div className="flex justify-center items-center min-h-screen"><Spinner /> Chargement de l'histoire...</div>;
   }
   if (error) {
-    return <div className="flex justify-center items-center min-h-screen text-red-500">{error}</div>;
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen text-center p-6">
+        <div className="text-red-500 mb-6 text-lg">{error}</div>
+        <Button
+          variant="default"
+          onClick={() => navigate("/dashboard")}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Retour au tableau de bord
+        </Button>
+      </div>
+    );
   }
 
   return (
