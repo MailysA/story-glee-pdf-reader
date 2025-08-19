@@ -53,31 +53,39 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const backgroundAudioRef = useRef<HTMLAudioElement>(null);
 
-  // Charger les voix et effets sonores depuis la base de données
+  // Précharger l'audio existant au montage
+  useEffect(() => {
+    if (story.audio_url && audioRef.current) {
+      console.log("Préchargement de l'audio existant:", story.audio_url);
+      audioRef.current.src = story.audio_url;
+      audioRef.current.preload = "metadata";
+      audioRef.current.load();
+    }
+  }, [story.audio_url]);
+
+  // Charger les voix et effets sonores depuis la base de données (en arrière-plan)
   useEffect(() => {
     const loadAudioData = async () => {
       try {
-        // Charger les voix
-        const { data: voices, error: voicesError } = await supabase
-          .from('audio_voices')
-          .select('*')
-          .eq('is_active', true)
-          .order('name');
+        // Utiliser des voix par défaut pendant le chargement
+        const defaultVoices = [
+          { voice_id: "charlie", name: "Charlie", description: "Voix douce", elevenlabs_id: "IKne3meq5aSn9XLyUdCD" },
+          { voice_id: "sarah", name: "Sarah", description: "Voix claire", elevenlabs_id: "EXAVITQu4vr4xnSDxMaL" },
+          { voice_id: "aria", name: "Aria", description: "Voix expressive", elevenlabs_id: "9BWtsMINqrJLrRacOk9x" }
+        ];
+        setAvailableVoices(defaultVoices);
 
-        if (voicesError) throw voicesError;
-        if (voices) setAvailableVoices(voices);
+        // Charger les vraies données en arrière-plan
+        const [voicesResponse, effectsResponse] = await Promise.all([
+          supabase.from('audio_voices').select('*').eq('is_active', true).order('name'),
+          supabase.from('audio_effects').select('*').eq('is_active', true).order('name')
+        ]);
 
-        // Charger les effets sonores
-        const { data: effects, error: effectsError } = await supabase
-          .from('audio_effects')
-          .select('*')
-          .eq('is_active', true)
-          .order('name');
-
-        if (effectsError) throw effectsError;
-        if (effects) setSoundEffects(effects);
+        if (voicesResponse.data) setAvailableVoices(voicesResponse.data);
+        if (effectsResponse.data) setSoundEffects(effectsResponse.data);
       } catch (error) {
         console.error('Erreur lors du chargement des données audio:', error);
+        // Garder les voix par défaut en cas d'erreur
       }
     };
 
@@ -161,24 +169,26 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
   };
 
   const togglePlay = async () => {
-    console.log("Toggle play - État actuel:", { 
-      hasAudioSrc: !!audioRef.current?.src, 
-      hasStoryAudioUrl: !!story.audio_url,
-      isLoading, 
-      audioError 
-    });
-
     // Si l'histoire a déjà un audio_url, l'utiliser directement (lecture illimitée)
-    if (story.audio_url && !audioRef.current?.src) {
-      console.log("Utilisation de l'audio stocké:", story.audio_url);
-      if (audioRef.current) {
-        audioRef.current.src = story.audio_url;
-        audioRef.current.load();
-      }
+    if (story.audio_url && audioRef.current && !audioRef.current.src) {
+      console.log("Chargement de l'audio existant:", story.audio_url);
+      audioRef.current.src = story.audio_url;
+      audioRef.current.load();
+      
+      // Attendre un court instant pour que l'audio soit prêt
+      setTimeout(() => {
+        if (audioRef.current && audioRef.current.readyState >= 1) {
+          audioRef.current.play().catch(console.error);
+          setIsPlaying(true);
+        }
+      }, 100);
+      return;
     }
+    
     // Sinon, générer l'audio si pas encore fait
-    else if (!audioRef.current?.src && !story.audio_url && !isLoading && !audioError) {
+    if (!audioRef.current?.src && !story.audio_url && !isLoading && !audioError) {
       await generateAudio(story.content, selectedVoice);
+      return;
     }
 
     if (audioRef.current && audioRef.current.src) {

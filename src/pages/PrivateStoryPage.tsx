@@ -14,26 +14,47 @@ export default function PrivateStoryPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/functions/v1/get-story-by-id?id=${id}`)
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Histoire non trouvée ou erreur de chargement.");
-        return res.json();
-      })
-      .then((data) => {
+    const fetchStory = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Utiliser l'URL complète Supabase pour l'edge function
+        const response = await fetch(`https://eczbwgkebhckysgrqfdg.supabase.co/functions/v1/get-story-by-id?id=${id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Histoire non trouvée ou erreur de chargement.");
+        }
+
+        const data = await response.json();
         setStory(data);
-        setError(null);
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
+        console.error("Erreur de chargement de l'histoire:", err);
         setError("Histoire non trouvée ou erreur de chargement.");
         setStory(null);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchStory();
   }, [id]);
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen"><Spinner /> Chargement de l'histoire...</div>;
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen gap-4">
+        <Spinner />
+        <p className="text-lg text-muted-foreground">Chargement de l'histoire...</p>
+        <p className="text-sm text-muted-foreground">Cela peut prendre quelques secondes</p>
+      </div>
+    );
   }
   if (error) {
     return (
