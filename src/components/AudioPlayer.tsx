@@ -131,12 +131,21 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
           audioRef.current.load();
         }
         
-        // Incrémenter le compteur de générations audio uniquement en cas de succès
-        if (!isPremium) {
+        // Incrémenter le compteur de générations audio uniquement si pas de cache
+        if (!isPremium && !data?.fromCache) {
           await incrementAudioGenerations();
         }
         
-        console.log("Audio généré avec succès et stocké:", data.audioUrl);
+        const message = data.fromCache 
+          ? "Audio récupéré depuis le cache - aucun coût !"
+          : "Audio généré avec succès et mis en cache";
+          
+        toast({
+          title: data.fromCache ? "Cache utilisé" : "Audio généré",
+          description: message,
+        });
+        
+        console.log(message, data.audioUrl);
       } else {
         throw new Error("Aucune URL audio reçue du serveur");
       }

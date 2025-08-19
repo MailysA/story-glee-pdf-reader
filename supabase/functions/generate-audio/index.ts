@@ -29,6 +29,64 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
+    // Créer un hash unique pour cette combinaison texte + voix
+    const textEncoder = new TextEncoder()
+    const data = textEncoder.encode(text + voice)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const contentHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    
+    const audioPath = `${userId}/${storyId}_${contentHash}.mp3`
+    
+    console.log(`Vérification cache pour: ${audioPath}`)
+
+    // Vérifier si l'audio existe déjà dans le cache (storage)
+    const { data: existingFile, error: checkError } = await supabase.storage
+      .from('story-audio')
+      .list(userId, {
+        search: `${storyId}_${contentHash}.mp3`
+      })
+
+    if (!checkError && existingFile && existingFile.length > 0) {
+      console.log('Audio trouvé dans le cache, pas de génération nécessaire')
+      
+      // Récupérer l'URL publique de l'audio en cache
+      const { data: urlData } = supabase.storage
+        .from('story-audio')
+        .getPublicUrl(audioPath)
+
+      const cachedAudioUrl = urlData.publicUrl
+
+      // Vérifier si l'histoire a déjà l'audio_url dans la DB, sinon la mettre à jour
+      const { data: storyData } = await supabase
+        .from('stories')
+        .select('audio_url')
+        .eq('id', storyId)
+        .eq('user_id', userId)
+        .single()
+
+      if (!storyData?.audio_url) {
+        await supabase
+          .from('stories')
+          .update({ audio_url: cachedAudioUrl })
+          .eq('id', storyId)
+          .eq('user_id', userId)
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          audioUrl: cachedAudioUrl,
+          fromCache: true,
+          message: 'Audio retrieved from cache'
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    console.log('Audio non trouvé dans le cache, génération via ElevenLabs...')
+
     // Get voice ID from database
     const { data: voiceData, error: voiceError } = await supabase
       .from('audio_voices')
@@ -81,9 +139,9 @@ serve(async (req) => {
       throw new Error(`ElevenLabs API error: ${response.status}`)
     }
 
-    // Store audio file in Supabase Storage
+    // Store audio file in Supabase Storage avec le nom incluant le hash
     const arrayBuffer = await response.arrayBuffer()
-    const audioPath = `${userId}/${storyId}.mp3`
+    console.log(`Stockage de l'audio généré dans: ${audioPath}`)
     
     const { error: uploadError } = await supabase.storage
       .from('story-audio')
@@ -121,6 +179,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         audioUrl,
+        fromCache: false,
         message: 'Audio generated and uploaded successfully'
       }),
       {
