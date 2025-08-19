@@ -160,35 +160,19 @@ export const StoryReader = ({ story }: StoryReaderProps) => {
               </div>
 
               {/* Page Content */}
-              <div className="flex-1 grid md:grid-cols-2 gap-8 items-center">
+              <div className="flex-1 flex items-center justify-center">
                 
-                {/* Text Side */}
-                <div className="space-y-4">
+                {/* Text Content */}
+                <div className="max-w-2xl mx-auto text-center space-y-6">
                   {/* Titre sur la première page */}
                   {currentPage === 0 && (
-                    <h1 className="text-2xl font-bold text-center text-primary mb-6">
+                    <h1 className="text-3xl font-bold text-primary mb-8">
                       {story.title}
                     </h1>
                   )}
-                  <p className="text-lg leading-relaxed text-foreground font-medium">
+                  <p className="text-xl leading-relaxed text-foreground font-medium">
                     {pages[currentPage]?.text}
                   </p>
-                </div>
-
-                {/* Illustration Side (affichée sur toutes les pages) */}
-                <div className="flex items-center justify-center">
-                  {story.illustration_url ? (
-                    <img
-                      src={story.illustration_url}
-                      alt="Illustration de l'histoire"
-                      className="max-w-full h-auto rounded-lg shadow-lg max-h-80 object-contain"
-                    />
-                  ) : (
-                    <div className="w-64 h-64 flex items-center justify-center bg-muted/20 rounded-lg">
-                      <BookOpen className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm text-muted-foreground">Pas d'illustration</p>
-                    </div>
-                  )}
                 </div>
               </div>
 
