@@ -15,7 +15,7 @@ function LegalSummaryInSettings() {
 }
 
 interface DashboardSettingsButtonProps {
-  user: User;
+  user: User | null;
   isPremium: boolean;
   subscriptionTier: string | null;
   storiesCount: number;
@@ -62,12 +62,13 @@ export function DashboardSettingsButton({
             isPremium={isPremium}
             onUpgrade={onUpgrade}
           />
-          <AccountManagement
-            isPremium={isPremium}
-            onUnsubscribe={onUnsubscribe}
-            onSignOut={onSignOut}
-            onDeleteAccount={onDeleteAccount}
-          />
+            <AccountManagement
+              isPremium={isPremium}
+              isAuthenticated={!!user}
+              onUnsubscribe={onUnsubscribe}
+              onSignOut={onSignOut}
+              onDeleteAccount={onDeleteAccount}
+            />
           <LegalSummaryInSettings />
         </div>
       </PopoverContent>

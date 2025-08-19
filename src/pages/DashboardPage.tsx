@@ -71,6 +71,12 @@ export default function Dashboard() {
 
   const handleSignOut = useCallback(async () => {
     try {
+      // Si l'utilisateur n'est pas connecté, aller à la page d'auth
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
@@ -82,7 +88,7 @@ export default function Dashboard() {
         variant: "destructive",
       });
     }
-  }, [navigate]);
+  }, [navigate, user]);
 
   const handleUnsubscribe = useCallback(async () => {
     try {

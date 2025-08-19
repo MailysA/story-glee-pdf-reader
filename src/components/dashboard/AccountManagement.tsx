@@ -5,6 +5,7 @@ import { useState } from "react";
 
 interface AccountManagementProps {
   isPremium: boolean;
+  isAuthenticated: boolean;
   onUnsubscribe: () => Promise<void>;
   onSignOut: () => Promise<void>;
   onDeleteAccount: () => Promise<void>;
@@ -12,6 +13,7 @@ interface AccountManagementProps {
 
 export function AccountManagement({ 
   isPremium, 
+  isAuthenticated,
   onUnsubscribe, 
   onSignOut, 
   onDeleteAccount 
@@ -77,39 +79,44 @@ export function AccountManagement({
           className="w-full flex items-center gap-2"
         >
           <LogOut className="w-4 h-4" />
-          {isLoading === 'signout' ? 'Déconnexion...' : 'Déconnexion'}
+          {isLoading === 'signout' 
+            ? (isAuthenticated ? 'Déconnexion...' : 'Connexion...') 
+            : (isAuthenticated ? 'Déconnexion' : 'Connexion')
+          }
         </Button>
         
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-            >
-              <Trash2 className="w-4 h-4" />
-              Supprimer mon compte
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Supprimer définitivement le compte</AlertDialogTitle>
-              <AlertDialogDescription>
-                ⚠️ Cette action est irréversible. Toutes vos histoires, paramètres et données seront définitivement supprimés.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Annuler</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={() => handleAction(onDeleteAccount, 'delete')} 
-                className="bg-red-600 hover:bg-red-700"
-                disabled={isLoading === 'delete'}
+        {isAuthenticated && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
               >
-                {isLoading === 'delete' ? 'Suppression...' : 'Supprimer définitivement'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <Trash2 className="w-4 h-4" />
+                Supprimer mon compte
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Supprimer définitivement le compte</AlertDialogTitle>
+                <AlertDialogDescription>
+                  ⚠️ Cette action est irréversible. Toutes vos histoires, paramètres et données seront définitivement supprimés.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={() => handleAction(onDeleteAccount, 'delete')} 
+                  className="bg-red-600 hover:bg-red-700"
+                  disabled={isLoading === 'delete'}
+                >
+                  {isLoading === 'delete' ? 'Suppression...' : 'Supprimer définitivement'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     </>
   );
