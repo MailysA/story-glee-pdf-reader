@@ -258,6 +258,71 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          icon: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      themes: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string
+          id: string
+          label: string
+          updated_at: string
+          value: string
+          video: string | null
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description: string
+          id?: string
+          label: string
+          updated_at?: string
+          value: string
+          video?: string | null
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          label?: string
+          updated_at?: string
+          value?: string
+          video?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "themes_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "theme_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           child_age: number | null
