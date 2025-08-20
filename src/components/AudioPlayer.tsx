@@ -109,13 +109,21 @@ export const AudioPlayer = ({ story, currentPage }: AudioPlayerProps) => {
     try {
       console.log("Génération audio avec voix:", voice);
       
+      // Get the current user
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      
+      if (!userId) {
+        throw new Error("Utilisateur non connecté");
+      }
+      
       const { data, error } = await supabase.functions.invoke('generate-audio', {
         body: { 
           text,
           voice,
           model: 'eleven_multilingual_v2',
           storyId: story.id,
-          userId: (await supabase.auth.getUser()).data.user?.id
+          userId
         }
       });
 
