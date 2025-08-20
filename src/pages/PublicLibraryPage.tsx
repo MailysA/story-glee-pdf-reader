@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Star, Home } from "lucide-react";
+import { BookOpen, Star, Home, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,16 @@ export default function PublicLibrary() {
   const [publicStories, setPublicStories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const downloadStory = (story: any) => {
+    const element = document.createElement("a");
+    const file = new Blob([story.story_content], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = `${story.title}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
 
   useEffect(() => {
     const fetchPublicStories = async () => {
@@ -117,6 +127,14 @@ export default function PublicLibrary() {
                     <Button onClick={() => navigate(`/library/${story.id}`)} className="flex-1 bg-gradient-to-r from-primary to-primary-glow hover:shadow-glow">
                       <BookOpen className="w-4 h-4 mr-2" />
                       Lire l'histoire
+                    </Button>
+                    <Button 
+                      onClick={() => downloadStory(story)}
+                      variant="outline"
+                      size="sm"
+                      className="px-3"
+                    >
+                      <Download className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
